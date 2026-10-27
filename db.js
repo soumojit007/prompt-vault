@@ -81,6 +81,23 @@ function readJson(file, fallback = []) {
   }
 }
 
+const { exec } = require('child_process');
+let gitPushTimeout = null;
+
+function triggerAutoGitSync() {
+  if (gitPushTimeout) clearTimeout(gitPushTimeout);
+  gitPushTimeout = setTimeout(() => {
+    try {
+      const gitCmd = `git add data/ public/uploads/ && git commit -m "Auto-sync prompts & library data" && git push origin main`;
+      exec(gitCmd, { cwd: __dirname }, (error, stdout, stderr) => {
+        if (!error) {
+          console.log('[AutoGitSync] ✓ Automatically synchronized data with GitHub repository!');
+        }
+      });
+    } catch (e) {}
+  }, 4000);
+}
+
 function writeJson(file, data) {
   const tempFile = `${file}.tmp`;
   fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), 'utf8');
@@ -91,6 +108,12 @@ function writeJson(file, data) {
     const key = path.basename(file, '.json');
     Store.findOneAndUpdate({ key }, { key, data }, { upsert: true, returnDocument: 'after' })
       .catch(err => console.error(`[MongoDB] Error syncing ${key}:`, err.message));
+  }
+
+  // Automatically sync to GitHub repository
+  const fileName = path.basename(file);
+  if (fileName === 'prompts.json' || fileName === 'categories.json') {
+    triggerAutoGitSync();
   }
 }
 
