@@ -60,6 +60,21 @@ if (process.env.MONGO_URI) {
           }
         } catch (e) {}
       }
+
+      // Real-time Cloud Sync: continuously keep server files synchronized with MongoDB Atlas
+      setInterval(async () => {
+        if (!isMongoConnected || !Store) return;
+        const syncKeys = ['prompts', 'categories', 'settings', 'users'];
+        for (const k of syncKeys) {
+          try {
+            const doc = await Store.findOne({ key: k });
+            if (doc && doc.data) {
+              const filePath = path.join(DATA_DIR, `${k}.json`);
+              fs.writeFileSync(filePath, JSON.stringify(doc.data, null, 2), 'utf8');
+            }
+          } catch (e) {}
+        }
+      }, 8000);
     })
     .catch(err => {
       console.warn('⚠️ MongoDB Atlas connection notice (using local storage fallback):', err.message);

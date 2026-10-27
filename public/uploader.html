@@ -169,11 +169,12 @@
         <div class="brand-text">Prompt<span>Vault</span> <span class="studio-brand-badge">STUDIO</span></div>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 14px;">
-        <span style="font-size: 12px; color: #10B981; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span id="connectionBadge" style="font-size: 12px; color: #10B981; display: flex; align-items: center; gap: 6px; font-weight: 600;">
           <span style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; display: inline-block; box-shadow: 0 0 8px #10B981;"></span>
-          Local Engine Active
+          <span id="connectionBadgeText">Connecting...</span>
         </span>
+        <div id="adminAuthBadge"></div>
         <a href="index.html" class="btn btn-secondary btn-sm" target="_blank">🌐 View Website</a>
         <a href="admin.html" class="btn btn-secondary btn-sm" target="_blank">👑 Admin Portal</a>
       </div>
@@ -371,6 +372,33 @@
     </div>
   </main>
 
+  <!-- Quick Admin Login Modal -->
+  <div id="loginModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 28px; width: 100%; max-width: 420px; box-shadow: var(--shadow-lg);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 18px; margin: 0; display: flex; align-items: center; gap: 8px;">👑 Admin Verification</h3>
+        <button type="button" onclick="closeLoginModal()" style="background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;">
+        To publish prompts or manage the live website, please verify your admin session:
+      </p>
+      <form onsubmit="handleAdminLoginSubmit(event)">
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12px;">Admin Email</label>
+          <input type="email" id="modalAdminEmail" class="form-input" value="soumojitkarmakar533@gmail.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12px;">Admin Password</label>
+          <input type="password" id="modalAdminPassword" class="form-input" placeholder="Enter admin password (e.g. Soumojit@123)" required autofocus>
+        </div>
+        <div id="loginErrorMsg" style="color: #EF4444; font-size: 12px; margin-bottom: 14px; display: none;"></div>
+        <button type="submit" id="modalLoginBtn" class="btn btn-primary" style="width: 100%; padding: 11px; font-weight: 700; font-size: 14px;">
+          Unlock Creator Studio
+        </button>
+      </form>
+    </div>
+  </div>
+
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="auth.js"></script>
@@ -380,13 +408,95 @@
     let selectedTools = ['Runway Gen-3', 'Kling AI'];
     let uploadedImageBase64 = null;
     let allCategories = [];
+    let pendingActionAfterLogin = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
-      // Auto login or check credentials
+      updateConnectionBadge();
+      updateAuthBadge();
       await loadCategories();
       await loadRecentPrompts();
       setupDropZone();
     });
+
+    function updateConnectionBadge() {
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const textEl = document.getElementById('connectionBadgeText');
+      if (textEl) {
+        textEl.textContent = isLocal ? '💻 Local (Syncs to MongoDB)' : '🌐 Live Website (Render Cloud)';
+      }
+    }
+
+    function updateAuthBadge() {
+      const badge = document.getElementById('adminAuthBadge');
+      if (!badge) return;
+      if (Auth.isLoggedIn() && Auth.isAdmin()) {
+        const u = Auth.getUser();
+        badge.innerHTML = `
+          <span style="font-size: 11.5px; background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 12px; border-radius: 20px; font-weight: 600; display: flex; align-items: center; gap: 5px;">
+            👑 Admin Connected
+          </span>
+        `;
+      } else {
+        badge.innerHTML = `
+          <button type="button" class="btn btn-primary btn-sm" onclick="openLoginModal()" style="font-size: 12px; padding: 5px 12px;">
+            🔑 Admin Login
+          </button>
+        `;
+      }
+    }
+
+    function openLoginModal(actionCallback) {
+      pendingActionAfterLogin = actionCallback || null;
+      const modal = document.getElementById('loginModal');
+      modal.style.display = 'flex';
+      setTimeout(() => document.getElementById('modalAdminPassword').focus(), 50);
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').style.display = 'none';
+      document.getElementById('loginErrorMsg').style.display = 'none';
+    }
+
+    async function handleAdminLoginSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('modalAdminEmail').value.trim();
+      const password = document.getElementById('modalAdminPassword').value;
+      const btn = document.getElementById('modalLoginBtn');
+      const errEl = document.getElementById('loginErrorMsg');
+
+      btn.disabled = true;
+      btn.textContent = 'Verifying...';
+      errEl.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok && data.token && data.user.role === 'admin') {
+          Auth.setSession(data.token, data.user);
+          showToast('👑 Admin verified! You are connected to the live database.');
+          closeLoginModal();
+          updateAuthBadge();
+          if (typeof pendingActionAfterLogin === 'function') {
+            const cb = pendingActionAfterLogin;
+            pendingActionAfterLogin = null;
+            cb();
+          }
+        } else {
+          errEl.textContent = data.error || 'Invalid credentials or not an admin account.';
+          errEl.style.display = 'block';
+        }
+      } catch (err) {
+        errEl.textContent = 'Network error contacting server.';
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Unlock Creator Studio';
+      }
+    }
 
     async function loadCategories() {
       try {
@@ -563,6 +673,11 @@
         return;
       }
 
+      if (!Auth.isLoggedIn() || !Auth.isAdmin()) {
+        openLoginModal(() => handlePublishPrompt(e));
+        return;
+      }
+
       const btn = document.getElementById('publishBtn');
       const btnText = document.getElementById('btnText');
       const btnIcon = document.getElementById('btnIcon');
@@ -570,7 +685,7 @@
       try {
         btn.disabled = true;
         btnIcon.textContent = '⏳';
-        btnText.textContent = 'Publishing to Website...';
+        btnText.textContent = 'Publishing to Live Website...';
 
         let finalThumbnail = uploadedImageBase64;
 
@@ -611,6 +726,11 @@
           headers: { 'Content-Type': 'application/json', ...Auth.getAuthHeader() },
           body: JSON.stringify(payload)
         });
+
+        if (res.status === 401) {
+          openLoginModal(() => handlePublishPrompt(e));
+          return;
+        }
 
         const data = await res.json();
         if (res.ok && data.success) {
@@ -676,7 +796,11 @@
     }
 
     async function deletePromptFromStudio(id) {
-      if (!confirm('Are you sure you want to delete this prompt?')) return;
+      if (!Auth.isLoggedIn() || !Auth.isAdmin()) {
+        openLoginModal(() => deletePromptFromStudio(id));
+        return;
+      }
+      if (!confirm('Are you sure you want to delete this prompt from the live site?')) return;
       try {
         const res = await fetch(`/api/admin/prompts/${id}`, {
           method: 'DELETE',
@@ -685,6 +809,10 @@
         if (res.ok) {
           showToast('Prompt deleted.');
           await loadRecentPrompts();
+        } else if (res.status === 401) {
+          openLoginModal(() => deletePromptFromStudio(id));
+        } else {
+          alert('Failed to delete prompt.');
         }
       } catch (err) {
         alert('Failed to delete prompt.');
