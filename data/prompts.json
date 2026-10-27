@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "id": "p_1793063731932",
+    "updatedAt": "2026-10-27",
+    "aspect": "1:1",
+    "tier": "free",
+    "tags": [],
+    "tools": [
+      "Runway Gen-3",
+      "Kling AI"
+    ],
+    "title": "bABY",
+    "category": "BABY",
+    "thumbnail": "/uploads/img_1793063731925_c24vn.png",
+    "description": "bABY",
+    "masterPrompt": "dgh",
+    "camera": "",
+    "negativePrompt": "",
+    "beats": ""
+  }
+]

@@ -11,6 +11,9 @@ const PROMPTS_FILE = path.join(DATA_DIR, 'prompts.json');
 const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 
+const DEFAULT_MONGO_URI = 'mongodb+srv://soumojitkarmakar533_db_user:OItvvNjY6T3Ct7TB@soumo.6brgu8w.mongodb.net/promptvault?retryWrites=true&w=majority';
+const MONGO_URI = process.env.MONGO_URI || DEFAULT_MONGO_URI;
+
 // MongoDB Cloud Persistence Schema
 const storeSchema = new mongoose.Schema({ key: { type: String, unique: true }, data: mongoose.Schema.Types.Mixed });
 let Store;
@@ -18,6 +21,18 @@ try {
   Store = mongoose.model('Store', storeSchema);
 } catch (e) {
   Store = mongoose.model('Store');
+}
+
+const imageSchema = new mongoose.Schema({
+  filename: { type: String, unique: true },
+  mimeType: String,
+  data: String
+});
+let ImageModel;
+try {
+  ImageModel = mongoose.model('Image', imageSchema);
+} catch (e) {
+  ImageModel = mongoose.model('Image');
 }
 
 let isMongoConnected = false;
@@ -43,15 +58,28 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// Connect to MongoDB Atlas if MONGO_URI is set
-if (process.env.MONGO_URI) {
-  mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 })
-    .then(async () => {
-      isMongoConnected = true;
-      console.log('⚡ Connected to MongoDB Atlas Cloud Database!');
-      // Hydrate local files from MongoDB if available
-      const keys = ['users', 'prompts', 'categories', 'settings'];
-      for (const k of keys) {
+// Connect to MongoDB Atlas (both Local and Live Cloud)
+mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
+  .then(async () => {
+    isMongoConnected = true;
+    console.log('⚡ Connected to MongoDB Atlas Cloud Database!');
+    // Hydrate local files from MongoDB if available
+    const keys = ['users', 'prompts', 'categories', 'settings'];
+    for (const k of keys) {
+      try {
+        const doc = await Store.findOne({ key: k });
+        if (doc && doc.data) {
+          const filePath = path.join(DATA_DIR, `${k}.json`);
+          fs.writeFileSync(filePath, JSON.stringify(doc.data, null, 2), 'utf8');
+        }
+      } catch (e) {}
+    }
+
+    // Real-time Cloud Sync: continuously keep server files synchronized with MongoDB Atlas
+    setInterval(async () => {
+      if (!isMongoConnected || !Store) return;
+      const syncKeys = ['prompts', 'categories', 'settings', 'users'];
+      for (const k of syncKeys) {
         try {
           const doc = await Store.findOne({ key: k });
           if (doc && doc.data) {
@@ -60,26 +88,11 @@ if (process.env.MONGO_URI) {
           }
         } catch (e) {}
       }
-
-      // Real-time Cloud Sync: continuously keep server files synchronized with MongoDB Atlas
-      setInterval(async () => {
-        if (!isMongoConnected || !Store) return;
-        const syncKeys = ['prompts', 'categories', 'settings', 'users'];
-        for (const k of syncKeys) {
-          try {
-            const doc = await Store.findOne({ key: k });
-            if (doc && doc.data) {
-              const filePath = path.join(DATA_DIR, `${k}.json`);
-              fs.writeFileSync(filePath, JSON.stringify(doc.data, null, 2), 'utf8');
-            }
-          } catch (e) {}
-        }
-      }, 8000);
-    })
-    .catch(err => {
-      console.warn('⚠️ MongoDB Atlas connection notice (using local storage fallback):', err.message);
-    });
-}
+    }, 8000);
+  })
+  .catch(err => {
+    console.warn('⚠️ MongoDB Atlas connection notice (using local storage fallback):', err.message);
+  });
 
 // Atomic file reading and writing with MongoDB Cloud Sync
 function readJson(file, fallback = []) {
@@ -104,7 +117,8 @@ function triggerAutoGitSync() {
   gitPushTimeout = setTimeout(() => {
     try {
       const gitCmd = `git add data/ public/uploads/ && git commit -m "Auto-sync prompts & library data" && git push origin main`;
-      exec(gitCmd, { cwd: __dirname }, (error, stdout, stderr) => {
+      const envPath = `C:\\Users\\soumo\\AppData\\Local\\Programs\\Git\\cmd;${process.env.PATH || ''}`;
+      exec(gitCmd, { cwd: __dirname, env: { ...process.env, PATH: envPath } }, (error, stdout, stderr) => {
         if (!error) {
           console.log('[AutoGitSync] ✓ Automatically synchronized data with GitHub repository!');
         }
@@ -366,6 +380,30 @@ const db = {
     prompts = prompts.filter(p => p.id !== id);
     writeJson(PROMPTS_FILE, prompts);
     return true;
+  },
+
+  // Cloud Image Storage in MongoDB Atlas
+  saveImageToCloud: async (filename, mimeType, base64Data) => {
+    if (!isMongoConnected || !ImageModel) return false;
+    try {
+      await ImageModel.findOneAndUpdate(
+        { filename },
+        { filename, mimeType, data: base64Data },
+        { upsert: true }
+      );
+      return true;
+    } catch (e) {
+      console.error('Error saving image to MongoDB:', e.message);
+      return false;
+    }
+  },
+  getImageFromCloud: async (filename) => {
+    if (!isMongoConnected || !ImageModel) return null;
+    try {
+      return await ImageModel.findOne({ filename });
+    } catch (e) {
+      return null;
+    }
   },
 
   // ─────────────────────────────────────────────────────────────

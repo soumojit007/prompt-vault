@@ -197,8 +197,34 @@ app.post('/api/admin/payment-settings', requireAdmin, (req, res) => {
   res.json({ success: true, settings: updated });
 });
 
-// Upload Image File to /public/uploads/ (Local & Web Accessible)
-app.post('/api/upload-image', (req, res) => {
+// Cloud Image Fallback Handler (serves from MongoDB Atlas if not on local disk)
+app.get('/uploads/:filename', async (req, res, next) => {
+  const safeFilename = path.basename(req.params.filename);
+  const localDisk = path.join(__dirname, 'public', 'uploads', safeFilename);
+  if (fs.existsSync(localDisk)) {
+    return res.sendFile(localDisk);
+  }
+
+  try {
+    const cloudImg = await db.getImageFromCloud(safeFilename);
+    if (cloudImg && cloudImg.data) {
+      const matches = cloudImg.data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+      if (matches && matches.length === 3) {
+        const mimeType = matches[1];
+        const buffer = Buffer.from(matches[2], 'base64');
+        res.setHeader('Content-Type', mimeType);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.send(buffer);
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching image from MongoDB cloud:', err.message);
+  }
+  next();
+});
+
+// Upload Image File to /public/uploads/ & MongoDB Cloud Storage
+app.post('/api/upload-image', async (req, res) => {
   const { imageBase64 } = req.body;
   if (!imageBase64) {
     return res.status(400).json({ error: 'No image data provided.' });
@@ -208,9 +234,10 @@ app.post('/api/upload-image', (req, res) => {
     const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     let buffer;
     let ext = 'jpg';
+    let mime = 'image/jpeg';
 
     if (matches && matches.length === 3) {
-      const mime = matches[1];
+      mime = matches[1];
       if (mime.includes('png')) ext = 'png';
       else if (mime.includes('webp')) ext = 'webp';
       else if (mime.includes('gif')) ext = 'gif';
@@ -224,6 +251,9 @@ app.post('/api/upload-image', (req, res) => {
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
     
     fs.writeFileSync(path.join(uploadDir, safeName), buffer);
+    // Persist to MongoDB Atlas for live cloud availability
+    await db.saveImageToCloud(safeName, mime, imageBase64);
+
     res.json({ success: true, url: `/uploads/${safeName}` });
   } catch (err) {
     console.error('Image upload error:', err);
