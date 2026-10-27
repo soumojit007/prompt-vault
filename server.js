@@ -197,6 +197,40 @@ app.post('/api/admin/payment-settings', requireAdmin, (req, res) => {
   res.json({ success: true, settings: updated });
 });
 
+// Upload Image File to /public/uploads/ (Local & Web Accessible)
+app.post('/api/upload-image', (req, res) => {
+  const { imageBase64 } = req.body;
+  if (!imageBase64) {
+    return res.status(400).json({ error: 'No image data provided.' });
+  }
+
+  try {
+    const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    let buffer;
+    let ext = 'jpg';
+
+    if (matches && matches.length === 3) {
+      const mime = matches[1];
+      if (mime.includes('png')) ext = 'png';
+      else if (mime.includes('webp')) ext = 'webp';
+      else if (mime.includes('gif')) ext = 'gif';
+      buffer = Buffer.from(matches[2], 'base64');
+    } else {
+      buffer = Buffer.from(imageBase64, 'base64');
+    }
+
+    const safeName = `img_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+    const uploadDir = path.join(__dirname, 'public', 'uploads');
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+    
+    fs.writeFileSync(path.join(uploadDir, safeName), buffer);
+    res.json({ success: true, url: `/uploads/${safeName}` });
+  } catch (err) {
+    console.error('Image upload error:', err);
+    res.status(500).json({ error: 'Failed to save image.' });
+  }
+});
+
 // ─────────────────────────────────────────────────────────────
 // GOOGLE SHEETS SYNC & CSV INTEGRATION ROUTES
 // ─────────────────────────────────────────────────────────────

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromptVault — Local Creator Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root {
+      --studio-bg: #0C0C0E;
+      --studio-card: #141417;
+      --studio-card-hover: #1A1A1E;
+      --studio-border: #26262B;
+    }
+
+    body {
+      background-color: var(--studio-bg);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    .studio-navbar {
+      background: rgba(12, 12, 14, 0.95);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      padding: 12px 24px;
+    }
+
+    .studio-nav-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .studio-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .studio-brand-badge {
+      font-size: 11px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #FA0505 0%, #B40404 100%);
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .studio-grid {
+      max-width: 1300px;
+      margin: 28px auto 60px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 28px;
+    }
+
+    @media (max-width: 960px) {
+      .studio-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      background: var(--studio-card);
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--primary);
+      background: rgba(250, 5, 5, 0.04);
+    }
+
+    .drop-preview-img {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+      object-fit: cover;
+      display: none;
+    }
+
+    .drop-overlay-controls {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      display: none;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .pill-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--studio-card);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .pill-btn:hover {
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .pill-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 0 12px var(--primary-glow);
+    }
+
+    .studio-card {
+      background: var(--studio-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .live-sync-banner {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 20, 23, 0.95) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="studio-navbar">
+    <div class="studio-nav-inner">
+      <div class="studio-brand" onclick="window.location.href='index.html'">
+        <div class="brand-logo-icon">⚡</div>
+        <div class="brand-text">Prompt<span>Vault</span> <span class="studio-brand-badge">STUDIO</span></div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <span style="font-size: 12px; color: #10B981; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; display: inline-block; box-shadow: 0 0 8px #10B981;"></span>
+          Local Engine Active
+        </span>
+        <a href="index.html" class="btn btn-secondary btn-sm" target="_blank">🌐 View Website</a>
+        <a href="admin.html" class="btn btn-secondary btn-sm" target="_blank">👑 Admin Portal</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="studio-grid">
+    <!-- LEFT COLUMN: Image Drag & Drop + Format Tags -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- Image Drop Zone -->
+      <div class="studio-card">
+        <label class="form-label" style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">
+          📸 Thumbnail Image (Drag & Drop or Pick)
+        </label>
+        
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <img id="previewImg" class="drop-preview-img" alt="Thumbnail Preview">
+          
+          <div id="dropPromptContent" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div style="font-size: 36px; margin-bottom: 4px;">🖼️</div>
+            <strong style="font-size: 14px;">Drop your image here</strong>
+            <span style="font-size: 12px; color: var(--text-muted);">or click to browse from your computer</span>
+            <span style="font-size: 11px; color: var(--text-faint); margin-top: 4px;">PNG, JPG, WEBP supported</span>
+          </div>
+
+          <div class="drop-overlay-controls" id="overlayControls">
+            <button type="button" class="btn btn-secondary btn-sm" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);" onclick="event.stopPropagation(); document.getElementById('fileInput').click();">
+              Replace
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" style="background: rgba(250,5,5,0.85); backdrop-filter: blur(4px);" onclick="event.stopPropagation(); removeUploadedImage();">
+              Remove
+            </button>
+          </div>
+        </div>
+
+        <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelected(event)">
+
+        <!-- Or Paste Image URL -->
+        <div style="margin-top: 14px;">
+          <input type="url" id="imageUrlInput" class="form-input" style="font-size: 12.5px;" placeholder="Or paste image web URL (e.g. Unsplash, Midjourney)..." oninput="handleImageUrlInput(event)">
+        </div>
+      </div>
+
+      <!-- Presets & Quick Settings Card -->
+      <div class="studio-card">
+        <label class="form-label" style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">⚙️ Format & Access</label>
+        
+        <!-- Access Tier -->
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12px; color: var(--text-muted);">Access Tier</label>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="pill-btn active" id="tierBtnPremium" onclick="selectTier('premium')">⭐ Premium VIP</button>
+            <button type="button" class="pill-btn" id="tierBtnFree" onclick="selectTier('free')">🎁 Free (Public)</button>
+          </div>
+        </div>
+
+        <!-- Aspect Ratio -->
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12px; color: var(--text-muted);">Aspect Ratio</label>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="pill-btn active" id="aspectBtn169" onclick="selectAspect('16:9')">16:9 (Landscape)</button>
+            <button type="button" class="pill-btn" id="aspectBtn916" onclick="selectAspect('9:16')">9:16 (Vertical)</button>
+            <button type="button" class="pill-btn" id="aspectBtn11" onclick="selectAspect('1:1')">1:1 (Square)</button>
+          </div>
+        </div>
+
+        <!-- Supported AI Models -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 12px; color: var(--text-muted);">AI Models Compatible</label>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="modelsContainer">
+            <button type="button" class="pill-btn active" onclick="toggleToolTag(this, 'Runway Gen-3')">Runway Gen-3</button>
+            <button type="button" class="pill-btn active" onclick="toggleToolTag(this, 'Kling AI')">Kling AI</button>
+            <button type="button" class="pill-btn" onclick="toggleToolTag(this, 'Midjourney v6')">Midjourney v6</button>
+            <button type="button" class="pill-btn" onclick="toggleToolTag(this, 'Luma Dream Machine')">Luma</button>
+            <button type="button" class="pill-btn" onclick="toggleToolTag(this, 'Seedance 2.0')">Seedance</button>
+            <button type="button" class="pill-btn" onclick="toggleToolTag(this, 'Sora')">Sora</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Prompt Content & Publishing -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <div class="live-sync-banner">
+        <span style="font-size: 18px;">⚡</span>
+        <div>
+          <strong>Instant Live Publishing Engine</strong>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+            Publishing here automatically updates your local database and syncs directly to your live MongoDB cloud database!
+          </div>
+        </div>
+      </div>
+
+      <div class="studio-card">
+        <form id="creatorForm" onsubmit="handlePublishPrompt(event)">
+          
+          <!-- Title -->
+          <div class="form-group">
+            <label class="form-label" style="font-size: 14px; font-weight: 700;">
+              Prompt Title *
+            </label>
+            <input type="text" id="promptTitle" class="form-input" style="font-size: 15px; font-weight: 600;" placeholder="e.g. 30-SEC CYBERPUNK HYPERCAR NIGHT CHASE" required>
+          </div>
+
+          <!-- Category Selection + Inline New Category -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" style="font-size: 13.5px; font-weight: 700; margin-bottom: 0;">
+                Category *
+              </label>
+              <button type="button" class="btn btn-secondary btn-sm" style="font-size: 11.5px; padding: 2px 8px;" onclick="toggleNewCategoryInput()">
+                <span>➕</span> Create New Category
+              </button>
+            </div>
+            
+            <select id="categorySelect" class="form-select" style="font-size: 14px;">
+              <!-- Injected dynamically -->
+            </select>
+
+            <!-- Inline New Category Input Box (Hidden by default) -->
+            <div id="newCategoryBox" style="display: none; margin-top: 10px; background: var(--bg-elevated); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+              <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Type any new category name (icon auto-detected):</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="customCategoryInput" class="form-input" placeholder="e.g. Automotive & Speed, Fashion, Anime...">
+                <button type="button" class="btn btn-primary btn-sm" onclick="addNewCategoryInline()">Add</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="toggleNewCategoryInput()">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tags -->
+          <div class="form-group">
+            <label class="form-label" style="font-size: 13px;">Tags (comma-separated)</label>
+            <input type="text" id="promptTags" class="form-input" placeholder="Cyberpunk, Neon, 8K, Cinematic, Anamorphic">
+          </div>
+
+          <!-- Short Hook / Description -->
+          <div class="form-group">
+            <label class="form-label" style="font-size: 13px;">Short Card Description / Hook</label>
+            <input type="text" id="promptDesc" class="form-input" placeholder="High-speed cinematic pursuit through wet neon alleyways with volumetric smoke.">
+          </div>
+
+          <!-- Master Prompt Textarea -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" style="font-size: 14px; font-weight: 700; margin-bottom: 0;">
+                Master Generative Prompt (Full Text) *
+              </label>
+              <span id="charCount" style="font-size: 11.5px; color: var(--text-muted);">0 chars</span>
+            </div>
+            <textarea id="promptMaster" class="form-textarea" style="min-height: 160px; font-size: 13.5px; line-height: 1.6;" placeholder="Paste your complete master AI prompt here with [SUBJECT], [ACTION], [CAMERA], [LIGHTING], and render engine specs..." required oninput="updateCharCount()"></textarea>
+          </div>
+
+          <!-- Optional Accordion for Camera, Negative & Beats -->
+          <details style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 24px;">
+            <summary style="font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text-muted);">
+              🎥 Optional Details: Camera Motion, Negative Prompt, Story Beats
+            </summary>
+            <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 14px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 12px;">Camera Motion & Lens</label>
+                <input type="text" id="promptCamera" class="form-input" placeholder="Anamorphic 35mm f/1.4, low tracking push-in, speed ramp">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 12px;">Negative Prompt Exclusions</label>
+                <input type="text" id="promptNegative" class="form-input" placeholder="blurry, distorted, jitter, cartoon, lowres, artifacts">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 12px;">Timeline Beats / Pacing</label>
+                <textarea id="promptBeats" class="form-textarea" style="min-height: 70px;" placeholder="00-08s: Intro hook&#10;08-20s: Motion & transformation&#10;20-30s: Payoff"></textarea>
+              </div>
+            </div>
+          </details>
+
+          <!-- Submit Bar -->
+          <div style="display: flex; justify-content: flex-end; align-items: center; gap: 14px;">
+            <button type="button" class="btn btn-secondary" onclick="resetCreatorForm()">Reset</button>
+            <button type="submit" class="btn btn-primary" id="publishBtn" style="padding: 12px 36px; font-size: 15px; font-weight: 700;">
+              <span id="btnIcon">🚀</span> <span id="btnText">Publish Prompt to Website</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Recently Added Prompts Section -->
+      <div class="studio-card">
+        <h3 style="font-size: 16px; margin-bottom: 14px;">✨ Recently Published Prompts</h3>
+        <div id="recentPromptsList" style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="color: var(--text-muted); font-size: 13px;">Loading existing prompts...</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="auth.js"></script>
+  <script>
+    let selectedTier = 'premium';
+    let selectedAspect = '16:9';
+    let selectedTools = ['Runway Gen-3', 'Kling AI'];
+    let uploadedImageBase64 = null;
+    let allCategories = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Auto login or check credentials
+      await loadCategories();
+      await loadRecentPrompts();
+      setupDropZone();
+    });
+
+    async function loadCategories() {
+      try {
+        const res = await fetch('/api/categories');
+        if (res.ok) {
+          allCategories = await res.json();
+          renderCategorySelect();
+        }
+      } catch (e) {
+        console.error('Error loading categories:', e);
+      }
+    }
+
+    function renderCategorySelect() {
+      const select = document.getElementById('categorySelect');
+      if (!select) return;
+      select.innerHTML = allCategories.map(c => `
+        <option value="${c.name}">${c.icon || '📁'} ${c.name}</option>
+      `).join('');
+    }
+
+    function toggleNewCategoryInput() {
+      const box = document.getElementById('newCategoryBox');
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+      if (box.style.display === 'block') {
+        document.getElementById('customCategoryInput').focus();
+      }
+    }
+
+    async function addNewCategoryInline() {
+      const input = document.getElementById('customCategoryInput');
+      const name = (input?.value || '').trim();
+      if (!name) return;
+
+      try {
+        const res = await fetch('/api/admin/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...Auth.getAuthHeader() },
+          body: JSON.stringify({ name })
+        });
+        if (res.ok) {
+          showToast(`Category "${name}" created!`);
+          await loadCategories();
+          document.getElementById('categorySelect').value = name;
+          input.value = '';
+          toggleNewCategoryInput();
+        }
+      } catch (err) {
+        // Fallback: add to select directly
+        const select = document.getElementById('categorySelect');
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = `📁 ${name}`;
+        select.appendChild(opt);
+        select.value = name;
+        toggleNewCategoryInput();
+      }
+    }
+
+    // Presets
+    function selectTier(tier) {
+      selectedTier = tier;
+      document.getElementById('tierBtnPremium').classList.toggle('active', tier === 'premium');
+      document.getElementById('tierBtnFree').classList.toggle('active', tier === 'free');
+    }
+
+    function selectAspect(aspect) {
+      selectedAspect = aspect;
+      document.getElementById('aspectBtn169').classList.toggle('active', aspect === '16:9');
+      document.getElementById('aspectBtn916').classList.toggle('active', aspect === '9:16');
+      document.getElementById('aspectBtn11').classList.toggle('active', aspect === '1:1');
+    }
+
+    function toggleToolTag(btn, tool) {
+      const idx = selectedTools.indexOf(tool);
+      if (idx > -1) {
+        selectedTools.splice(idx, 1);
+        btn.classList.remove('active');
+      } else {
+        selectedTools.push(tool);
+        btn.classList.add('active');
+      }
+    }
+
+    function updateCharCount() {
+      const val = document.getElementById('promptMaster').value;
+      document.getElementById('charCount').textContent = `${val.length} chars`;
+    }
+
+    // Drag and Drop Zone Setup
+    function setupDropZone() {
+      const zone = document.getElementById('dropZone');
+      ['dragenter', 'dragover'].forEach(name => {
+        zone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          zone.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(name => {
+        zone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          zone.classList.remove('dragover');
+        });
+      });
+
+      zone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files[0]) {
+          processFile(files[0]);
+        }
+      });
+    }
+
+    function handleFileSelected(e) {
+      const file = e.target.files[0];
+      if (file) processFile(file);
+    }
+
+    function processFile(file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        uploadedImageBase64 = evt.target.result;
+        displayImagePreview(evt.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleImageUrlInput(e) {
+      const url = e.target.value.trim();
+      if (url) {
+        uploadedImageBase64 = url;
+        displayImagePreview(url);
+      }
+    }
+
+    function displayImagePreview(src) {
+      const img = document.getElementById('previewImg');
+      const content = document.getElementById('dropPromptContent');
+      const controls = document.getElementById('overlayControls');
+      img.src = src;
+      img.style.display = 'block';
+      content.style.display = 'none';
+      controls.style.display = 'flex';
+    }
+
+    function removeUploadedImage() {
+      uploadedImageBase64 = null;
+      document.getElementById('previewImg').style.display = 'none';
+      document.getElementById('previewImg').src = '';
+      document.getElementById('dropPromptContent').style.display = 'flex';
+      document.getElementById('overlayControls').style.display = 'none';
+      document.getElementById('fileInput').value = '';
+      document.getElementById('imageUrlInput').value = '';
+    }
+
+    // Publish Prompt
+    async function handlePublishPrompt(e) {
+      e.preventDefault();
+      const title = document.getElementById('promptTitle').value.trim();
+      const masterPrompt = document.getElementById('promptMaster').value.trim();
+      const category = document.getElementById('categorySelect').value;
+      const tagsRaw = document.getElementById('promptTags').value.trim();
+      const description = document.getElementById('promptDesc').value.trim();
+      const camera = document.getElementById('promptCamera').value.trim();
+      const negativePrompt = document.getElementById('promptNegative').value.trim();
+      const beats = document.getElementById('promptBeats').value.trim();
+
+      if (!title || !masterPrompt) {
+        alert('Please provide at least a Title and Master Prompt.');
+        return;
+      }
+
+      const btn = document.getElementById('publishBtn');
+      const btnText = document.getElementById('btnText');
+      const btnIcon = document.getElementById('btnIcon');
+
+      try {
+        btn.disabled = true;
+        btnIcon.textContent = '⏳';
+        btnText.textContent = 'Publishing to Website...';
+
+        let finalThumbnail = uploadedImageBase64;
+
+        // If base64 image, upload to server
+        if (uploadedImageBase64 && uploadedImageBase64.startsWith('data:')) {
+          try {
+            const uploadRes = await fetch('/api/upload-image', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ imageBase64: uploadedImageBase64 })
+            });
+            if (uploadRes.ok) {
+              const uploadData = await uploadRes.json();
+              if (uploadData.url) finalThumbnail = uploadData.url;
+            }
+          } catch (err) {
+            console.warn('Image upload fallback to inline data.');
+          }
+        }
+
+        const payload = {
+          title,
+          category,
+          tier: selectedTier,
+          aspect: selectedAspect,
+          tags: tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [],
+          thumbnail: finalThumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+          description: description || title,
+          masterPrompt,
+          camera,
+          negativePrompt,
+          beats,
+          tools: selectedTools.length ? selectedTools : ['Runway Gen-3', 'Kling AI']
+        };
+
+        const res = await fetch('/api/admin/prompts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...Auth.getAuthHeader() },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast(`🚀 Prompt "${title}" published live successfully!`);
+          resetCreatorForm();
+          await loadRecentPrompts();
+        } else {
+          alert(data.error || 'Failed to publish prompt.');
+        }
+      } catch (err) {
+        alert('Error connecting to server.');
+      } finally {
+        btn.disabled = false;
+        btnIcon.textContent = '🚀';
+        btnText.textContent = 'Publish Prompt to Website';
+      }
+    }
+
+    function resetCreatorForm() {
+      document.getElementById('promptTitle').value = '';
+      document.getElementById('promptMaster').value = '';
+      document.getElementById('promptTags').value = '';
+      document.getElementById('promptDesc').value = '';
+      document.getElementById('promptCamera').value = '';
+      document.getElementById('promptNegative').value = '';
+      document.getElementById('promptBeats').value = '';
+      removeUploadedImage();
+      updateCharCount();
+    }
+
+    async function loadRecentPrompts() {
+      try {
+        const res = await fetch('/api/prompts');
+        if (res.ok) {
+          const prompts = await res.json();
+          const container = document.getElementById('recentPromptsList');
+          if (!container) return;
+
+          const recent = prompts.slice(0, 5);
+          if (recent.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted); font-size:13px;">No prompts found.</div>';
+            return;
+          }
+
+          container.innerHTML = recent.map(p => `
+            <div style="display:flex; align-items:center; gap:14px; background:var(--bg-elevated); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+              <img src="${p.thumbnail}" style="width:48px; height:48px; border-radius:6px; object-fit:cover;" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80'">
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.title)}</div>
+                <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">
+                  <span>${escapeHtml(p.category)}</span> • 
+                  <span style="color:${p.tier === 'premium' ? '#F59E0B' : '#10B981'}; font-weight:700;">${p.tier.toUpperCase()}</span> • 
+                  <span>${p.aspect || '16:9'}</span>
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="deletePromptFromStudio('${p.id}')" title="Delete">🗑️</button>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.error('Error loading recent prompts:', e);
+      }
+    }
+
+    async function deletePromptFromStudio(id) {
+      if (!confirm('Are you sure you want to delete this prompt?')) return;
+      try {
+        const res = await fetch(`/api/admin/prompts/${id}`, {
+          method: 'DELETE',
+          headers: Auth.getAuthHeader()
+        });
+        if (res.ok) {
+          showToast('Prompt deleted.');
+          await loadRecentPrompts();
+        }
+      } catch (err) {
+        alert('Failed to delete prompt.');
+      }
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.innerHTML = `<span>⚡</span><span>${msg}</span>`;
+      container.appendChild(t);
+      setTimeout(() => {
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 300);
+      }, 3200);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
