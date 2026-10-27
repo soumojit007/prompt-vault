@@ -1,0 +1,76 @@
+[
+  {
+    "id": "p_4",
+    "title": "MASTER PROMPT — VIRAL 3D ENGINEERING CUTAWAY EXPLAINER",
+    "category": "Art & Animation",
+    "tier": "premium",
+    "aspect": "16:9",
+    "tags": [
+      "Engineering",
+      "Cutaway",
+      "3D Tech",
+      "Explainer"
+    ],
+    "thumbnail": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+    "description": "Complex mechanical cutaway animation of a futuristic hypersonic jet engine showing combustion airflow in glowing neon thermal layers.",
+    "masterPrompt": "HYPER-TECHNICAL 3D CAD CINEMATIC: [SUBJECT: Futuristic scramjet engine floating in high-tech dark minimalist hangar, pristine titanium and carbon fiber exterior]. [ACTION: Seamless cross-section cutaway splits open with mechanical precision, revealing internal turbine blades spinning and supersonic air compression with glowing blue and orange thermo-fluid dynamics]. [CAMERA: Smooth 360-degree orbital camera pan, isometric to close-up perspective, subtle depth of field blur, cinematic raytraced reflections].",
+    "camera": "Cinematic 360 orbital camera motion, smooth mechanical rack-focus",
+    "negativePrompt": "simplistic 2d cartoon, jittery cutaway, unrealistic physics",
+    "tools": [
+      "Runway Gen-3",
+      "Seedance 2.0",
+      "Blender AI"
+    ],
+    "beats": "00-06s: Sleek exterior hover shot\n06-18s: Multi-layer mechanical peel & combustion cycle\n18-30s: Full thrust burst & speed particle trail",
+    "updatedAt": "2026-10-19"
+  },
+  {
+    "id": "p_5",
+    "title": "30-SEC CINEMATIC UNDERDOG BASEBALL HERO REVERSAL ENGINE",
+    "category": "Sports & Action",
+    "tier": "free",
+    "aspect": "16:9",
+    "tags": [
+      "Sports",
+      "Emotional",
+      "Slow-Motion",
+      "Underdog"
+    ],
+    "thumbnail": "https://images.unsplash.com/photo-1508344928928-7165b67de128?auto=format&fit=crop&w=800&q=80",
+    "description": "High-emotion bottom-of-the-ninth stadium drama. Rain poured down as the unlikely hitter steps up for the game-winning home run.",
+    "masterPrompt": "HOLLYWOOD SPORTS DRAMA CINEMA: [SUBJECT: Heavy rain pouring down in a massive floodlit stadium at midnight, intense crowd roar in slow motion]. [ACTION: Young exhausted baseball batter takes a deep breath, water droplets dripping from helmet visor. Pitcher throws 100mph fastball, slow-motion bullet time bat swing connects with explosive kinetic water spray]. [CAMERA: Phantom high-speed 1000fps camera, intense close-up on focused eyes to wide stadium blast]. [COLOR: High-contrast teal and orange cinema grade].",
+    "camera": "Speed-ramped 1000fps to 24fps dynamic whip pan",
+    "negativePrompt": "flat lighting, blurry faces, distorted bat, unnatural rain physics",
+    "tools": [
+      "Kling AI",
+      "Runway Gen-3"
+    ],
+    "beats": "00-08s: Rain drops on helmet & pitcher windup\n08-20s: Bullet-time ball approach & explosive contact\n20-30s: Ball sailing over stadium lights & crowd erupts",
+    "updatedAt": "2026-10-18"
+  },
+  {
+    "id": "p_6",
+    "title": "ULTRA MASTER PROMPT — RAW SAVANNA COMEDY INVENTION FAIL ENGINE",
+    "category": "Comedy & Entertainment",
+    "tier": "premium",
+    "aspect": "16:9",
+    "tags": [
+      "Comedy",
+      "Viral Reels",
+      "Animals",
+      "Slapstick"
+    ],
+    "thumbnail": "https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=800&q=80",
+    "description": "Clever slapstick animation where a witty meerkat attempts to build an elaborate bamboo catapult that hilariously backfires into a mud puddle.",
+    "masterPrompt": "PIXAR-STYLE 3D COMEDY SHORT: [SUBJECT: An expressive, determined meerkat wearing makeshift aviator goggles and a toolbelt in the golden African savanna]. [ACTION: The meerkat pulls a vine to launch a giant melon catapult; the bamboo arm snaps forward, tangles with his tail, and launches him gently in an arc into a tranquil mud bath next to a bewildered baby elephant]. [EXPRESSION: Hilarious wide-eyed realization before launch, comical splash with cartoon sound wave physics].",
+    "camera": "Wide shot into fast comical whip-zoom on meerkat face",
+    "negativePrompt": "photorealistic blood, scary, grim, ugly textures, stuttering movement",
+    "tools": [
+      "Seedance 2.0",
+      "Kling AI",
+      "Midjourney v6"
+    ],
+    "beats": "00-07s: Serious technical blueprint inspection\n07-19s: Catapult release & comical tail tangle\n19-30s: Mud puddle splash & elephant giggles",
+    "updatedAt": "2026-10-17"
+  }
+]
