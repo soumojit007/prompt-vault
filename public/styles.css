@@ -1688,3 +1688,173 @@ button, input, select, textarea {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   VIRAL FEATURES: ANNOUNCEMENT BAR, DAILY DROP & REMIX STYLES
+   ───────────────────────────────────────────────────────────── */
+
+.top-announcement-bar {
+  background: linear-gradient(90deg, #18181B 0%, #27272A 50%, #18181B 100%);
+  border-bottom: 1px solid rgba(250, 5, 5, 0.3);
+  padding: 8px 0;
+  position: relative;
+  z-index: 101;
+}
+
+.live-dot-pulse {
+  width: 8px;
+  height: 8px;
+  background: #FA0505;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #FA0505;
+  animation: pulseDot 1.4s infinite;
+  display: inline-block;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 4px #FA0505; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px #FA0505; }
+  100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 4px #FA0505; }
+}
+
+.countdown-badge {
+  background: rgba(250, 5, 5, 0.15);
+  border: 1px solid rgba(250, 5, 5, 0.4);
+  color: #FA0505;
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.announcement-link {
+  color: var(--text-muted);
+  font-weight: 600;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.announcement-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Daily Drop Card */
+.daily-drop-card {
+  background: linear-gradient(135deg, rgba(250, 5, 5, 0.12) 0%, rgba(20, 20, 23, 0.95) 100%);
+  border: 1px solid rgba(250, 5, 5, 0.4);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(250, 5, 5, 0.08);
+  transition: var(--transition);
+}
+
+.daily-drop-card:hover {
+  border-color: #FA0505;
+  box-shadow: 0 14px 40px rgba(250, 5, 5, 0.2);
+  transform: translateY(-2px);
+}
+
+.daily-drop-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #FA0505 0%, #B91C1C 100%);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 3px 12px;
+  border-radius: 9999px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.daily-drop-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.daily-drop-thumb {
+  width: 90px;
+  height: 90px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.daily-drop-info {
+  flex: 1;
+  min-width: 240px;
+}
+
+.daily-drop-title {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.daily-drop-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.daily-drop-btn {
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* Prompt Remix Playground Box */
+.remix-playground {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-top: 16px;
+}
+
+.remix-tag-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.remix-tag-btn:hover {
+  background: rgba(250, 5, 5, 0.15);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.prompt-tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 8px 16px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+}
+
+.prompt-tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+

@@ -37,7 +37,8 @@ async function loadDashboardData() {
     fetchCategories(),
     fetchPrompts(),
     fetchPaymentSettings(),
-    fetchGoogleSheetSettings()
+    fetchGoogleSheetSettings(),
+    fetchCommunitySubmissions()
   ]);
 }
 
@@ -506,6 +507,8 @@ window.switchAdminTab = function(tab) {
   if (payBtn) payBtn.classList.toggle('active', tab === 'payment');
   const sheetBtn = document.getElementById('tabBtnSheets');
   if (sheetBtn) sheetBtn.classList.toggle('active', tab === 'sheets');
+  const subBtn = document.getElementById('tabBtnSubmissions');
+  if (subBtn) subBtn.classList.toggle('active', tab === 'submissions');
 
   document.getElementById('sectionUsers').style.display = tab === 'users' ? 'block' : 'none';
   document.getElementById('sectionCategories').style.display = tab === 'categories' ? 'block' : 'none';
@@ -514,6 +517,10 @@ window.switchAdminTab = function(tab) {
   if (paySec) paySec.style.display = tab === 'payment' ? 'block' : 'none';
   const sheetSec = document.getElementById('sectionSheets');
   if (sheetSec) sheetSec.style.display = tab === 'sheets' ? 'block' : 'none';
+  const subSec = document.getElementById('sectionSubmissions');
+  if (subSec) subSec.style.display = tab === 'submissions' ? 'block' : 'none';
+
+  if (tab === 'submissions') fetchCommunitySubmissions();
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -825,5 +832,104 @@ window.handleChangeCredentials = async function(e) {
     alert('Server connection error.');
   } finally {
     if (btn) btn.disabled = false;
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// COMMUNITY PROMPT SUBMISSION CONTROLLER
+// ─────────────────────────────────────────────────────────────
+
+let allSubmissions = [];
+
+async function fetchCommunitySubmissions() {
+  try {
+    const res = await fetch('/api/admin/community-submissions', { headers: Auth.getAuthHeader() });
+    if (res.ok) {
+      allSubmissions = await res.json();
+      const badge = document.getElementById('submissionsCountBadge');
+      const pendingCount = allSubmissions.filter(s => s.status === 'pending').length;
+      if (badge) badge.textContent = pendingCount;
+      renderSubmissionsTable();
+    }
+  } catch (err) {
+    console.error('Error fetching submissions:', err);
+  }
+}
+
+function renderSubmissionsTable() {
+  const tbody = document.getElementById('submissionsTableBody');
+  if (!tbody) return;
+
+  if (allSubmissions.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">No community submissions yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = allSubmissions.map(s => {
+    const isPending = s.status === 'pending';
+    const isApproved = s.status === 'approved';
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight: 700;">${escapeHtml(s.creatorName || 'Anonymous')}</div>
+          ${s.creatorSocial ? `<a href="${escapeHtml(s.creatorSocial)}" target="_blank" style="font-size: 11.5px; color: #10B981;">🔗 Link</a>` : '<span style="font-size:11.5px; color:var(--text-muted);">No link</span>'}
+        </td>
+        <td>
+          <div style="font-weight: 700; font-size: 13.5px;">${escapeHtml(s.title)}</div>
+          <span style="font-size: 11.5px; color: var(--primary);">📁 ${escapeHtml(s.category)}</span>
+        </td>
+        <td>
+          <div style="max-width: 320px; font-size: 12px; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted);" title="${escapeHtml(s.masterPrompt)}">
+            ${escapeHtml(s.masterPrompt)}
+          </div>
+        </td>
+        <td style="font-size: 12px; color: var(--text-muted);">${(s.submittedAt || '').split('T')[0] || 'Recent'}</td>
+        <td>
+          <span class="user-status-pill ${s.status === 'approved' ? 'active_paid' : (s.status === 'pending' ? 'pending' : 'free')}">
+            ${s.status.toUpperCase()}
+          </span>
+        </td>
+        <td>
+          ${isPending ? `
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-primary btn-sm" onclick="approveCommunityPrompt('${s.id}')" style="padding: 4px 10px; font-size: 12px;">✅ Approve</button>
+              <button class="btn btn-secondary btn-sm" onclick="rejectCommunityPrompt('${s.id}')" style="padding: 4px 10px; font-size: 12px; color: #F87171;">❌ Reject</button>
+            </div>
+          ` : `<span style="font-size: 12px; color: var(--text-muted);">${isApproved ? 'Live on Site' : 'Declined'}</span>`}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.approveCommunityPrompt = async function(id) {
+  try {
+    const res = await fetch(`/api/admin/community-submissions/${id}/approve`, {
+      method: 'POST',
+      headers: Auth.getAuthHeader()
+    });
+    if (res.ok) {
+      alert('Prompt approved and published live to website!');
+      await fetchCommunitySubmissions();
+      await fetchPrompts();
+    }
+  } catch (err) {
+    alert('Failed to approve prompt.');
+  }
+};
+
+window.rejectCommunityPrompt = async function(id) {
+  if (!confirm('Reject this community prompt submission?')) return;
+  try {
+    const res = await fetch(`/api/admin/community-submissions/${id}/reject`, {
+      method: 'POST',
+      headers: Auth.getAuthHeader()
+    });
+    if (res.ok) {
+      await fetchCommunitySubmissions();
+    }
+  } catch (err) {
+    alert('Failed to reject submission.');
   }
 };

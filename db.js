@@ -10,6 +10,7 @@ const CATEGORIES_FILE = path.join(DATA_DIR, 'categories.json');
 const PROMPTS_FILE = path.join(DATA_DIR, 'prompts.json');
 const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
+const SUBMISSIONS_FILE = path.join(DATA_DIR, 'submissions.json');
 
 const DEFAULT_MONGO_URI = 'mongodb+srv://soumojitkarmakar533_db_user:OItvvNjY6T3Ct7TB@soumo.6brgu8w.mongodb.net/promptvault?retryWrites=true&w=majority';
 const MONGO_URI = process.env.MONGO_URI || DEFAULT_MONGO_URI;
@@ -50,7 +51,10 @@ const DEFAULT_SETTINGS = {
   autoSyncEnabled: false,
   autoSyncInterval: 15,
   lastSyncedAt: null,
-  lastSyncStats: null
+  lastSyncStats: null,
+  whatsappCommunityUrl: 'https://chat.whatsapp.com/invite',
+  telegramCommunityUrl: 'https://t.me/promptvault_vip',
+  dailyDropPromptId: ''
 };
 
 // Ensure data directory exists
@@ -404,6 +408,54 @@ const db = {
     } catch (e) {
       return null;
     }
+  },
+
+  // Community Prompts & User Submissions
+  getSubmissions: () => readJson(SUBMISSIONS_FILE, []),
+  createSubmission: (data) => {
+    const list = readJson(SUBMISSIONS_FILE, []);
+    const newSub = {
+      id: 'sub_' + Date.now(),
+      status: 'pending',
+      submittedAt: new Date().toISOString(),
+      ...data
+    };
+    list.unshift(newSub);
+    writeJson(SUBMISSIONS_FILE, list);
+    return newSub;
+  },
+  approveSubmission: (id) => {
+    const list = readJson(SUBMISSIONS_FILE, []);
+    const sub = list.find(s => s.id === id);
+    if (!sub) return null;
+    sub.status = 'approved';
+    sub.approvedAt = new Date().toISOString();
+    writeJson(SUBMISSIONS_FILE, list);
+
+    return db.createPrompt({
+      title: sub.title,
+      category: sub.category || 'General',
+      tier: 'free',
+      aspect: sub.aspect || '16:9',
+      tags: sub.tags || ['Community', 'Creator Spotlight'],
+      thumbnail: sub.thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+      description: sub.description || sub.title,
+      masterPrompt: sub.masterPrompt,
+      camera: sub.camera || '',
+      negativePrompt: sub.negativePrompt || '',
+      tools: sub.tools || ['Runway Gen-3', 'Kling AI'],
+      beats: sub.beats || '',
+      creatorName: sub.creatorName || 'Anonymous Creator',
+      creatorSocial: sub.creatorSocial || ''
+    });
+  },
+  rejectSubmission: (id) => {
+    const list = readJson(SUBMISSIONS_FILE, []);
+    const sub = list.find(s => s.id === id);
+    if (!sub) return null;
+    sub.status = 'rejected';
+    writeJson(SUBMISSIONS_FILE, list);
+    return sub;
   },
 
   // ─────────────────────────────────────────────────────────────

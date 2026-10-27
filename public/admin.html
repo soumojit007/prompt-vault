@@ -90,6 +90,9 @@
       <button class="admin-tab" id="tabBtnSheets" onclick="switchAdminTab('sheets')">
         <span>📊</span> Google Sheets Sync
       </button>
+      <button class="admin-tab" id="tabBtnSubmissions" onclick="switchAdminTab('submissions')">
+        <span>🌟</span> Community Submissions (<span id="submissionsCountBadge">0</span>)
+      </button>
     </div>
 
     <!-- ─────────────────────────────────────────────────────────────
@@ -613,6 +616,41 @@
                 <td>Multiline Text</td>
                 <td>00-08s: Intro\n08-20s: Climax</td>
                 <td>Pacing timeline breakdown.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────
+         SECTION 6: COMMUNITY PROMPT SUBMISSIONS
+         ───────────────────────────────────────────────────────────── -->
+    <section id="sectionSubmissions" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="font-size: 18px; margin-bottom: 4px;">🌟 Community Creator Submissions</h3>
+          <p style="color: var(--text-muted); font-size: 13.5px;">Review viral prompts submitted by creators. Approved prompts will instantly appear live on the website with creator attribution.</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="fetchCommunitySubmissions()">🔄 Refresh Submissions</button>
+      </div>
+
+      <div class="admin-card" style="padding: 0; overflow: hidden;">
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Creator & Attribution</th>
+                <th>Prompt Title & Category</th>
+                <th>Master Generative Prompt</th>
+                <th>Submitted Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="submissionsTableBody">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">Loading community submissions...</td>
               </tr>
             </tbody>
           </table>

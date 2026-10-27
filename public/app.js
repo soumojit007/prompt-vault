@@ -146,6 +146,20 @@ async function initApp() {
 
   // Setup UI event listeners
   setupEventListeners();
+
+  // Fetch Payment Settings for Social links
+  await fetchCurrentPaymentSettings();
+
+  // Check if direct prompt link was requested (?prompt=p_...)
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const directPromptId = urlParams.get('prompt');
+    if (directPromptId) {
+      setTimeout(() => {
+        openPromptDetail(directPromptId);
+      }, 500);
+    }
+  } catch (e) {}
 }
 
 // Display Admin button in hero if current user is Admin
@@ -210,6 +224,7 @@ async function loadPrompts() {
   renderCategoryPills();
   renderPrompts();
   updateStats();
+  initDailyDrop();
 }
 
 // Render Category Pills (Horizontal Multi-Line Wrap)
@@ -459,46 +474,112 @@ window.openPromptDetail = function(id) {
   } else {
     // ⭐ Unlocked View (Free prompts OR Approved VIP / Admin)
     promptContentHtml = `
-      <!-- Master Prompt Box with Copy Button -->
-      <div class="prompt-code-block">
-        <div class="prompt-code-header">
-          <span class="prompt-code-title">🎬 Master Generative Engine Prompt</span>
-          <button class="btn btn-primary" style="padding: 6px 16px; font-size: 13px;" onclick="copyActivePrompt()">
-            📋 Copy Master Prompt
-          </button>
-        </div>
-        <div class="prompt-content-text" id="activePromptCode">${escapeHtml(prompt.masterPrompt)}</div>
+      <!-- Tab Controls: Master vs Remix -->
+      <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border); margin-bottom: 16px;">
+        <button type="button" class="prompt-tab-btn active" id="tabBtnMaster" onclick="switchModalTab('master')">🎬 Master Prompt</button>
+        <button type="button" class="prompt-tab-btn" id="tabBtnRemix" onclick="switchModalTab('remix')">✨ Interactive Remix & Customize</button>
       </div>
 
-      <!-- Technical Specifications -->
-      <div class="specs-grid">
-        <div class="spec-item">
-          <div class="spec-label">🎥 Camera & Lens Motion</div>
-          <div class="spec-value">${escapeHtml(prompt.camera || 'Cinematic wide lens with smooth slow-motion rack focus')}</div>
-        </div>
-        <div class="spec-item">
-          <div class="spec-label">⚡ Negative Prompt</div>
-          <div class="spec-value">${escapeHtml(prompt.negativePrompt || 'blurry, distorted, low quality, cartoon, artifacts')}</div>
-        </div>
-        <div class="spec-item">
-          <div class="spec-label">🛠️ Recommended AI Video Tools</div>
-          <div class="spec-value">${(prompt.tools || ['Runway Gen-3', 'Kling AI', 'Luma']).join(', ')}</div>
-        </div>
-      </div>
-
-      <!-- Scene Breakdown / Beats -->
-      ${prompt.beats ? `
-        <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-top: 14px;">
-          <div style="font-size: 12px; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 6px;">
-            ⏱️ 30-Second Scene Breakdown / Timing Beats
+      <!-- Tab 1: Master Prompt View -->
+      <div id="modalMasterTabContent">
+        <div class="prompt-code-block">
+          <div class="prompt-code-header">
+            <span class="prompt-code-title">🎬 Master Generative Engine Prompt</span>
+            <button class="btn btn-primary" style="padding: 6px 16px; font-size: 13px;" onclick="copyActivePrompt()">
+              📋 Copy Master Prompt
+            </button>
           </div>
-          <pre style="font-family: inherit; font-size: 13px; color: var(--text-muted); white-space: pre-wrap;">${escapeHtml(prompt.beats)}</pre>
+          <div class="prompt-content-text" id="activePromptCode">${escapeHtml(prompt.masterPrompt)}</div>
         </div>
-      ` : ''}
+
+        <!-- Technical Specifications -->
+        <div class="specs-grid">
+          <div class="spec-item">
+            <div class="spec-label">🎥 Camera & Lens Motion</div>
+            <div class="spec-value">${escapeHtml(prompt.camera || 'Cinematic wide lens with smooth slow-motion rack focus')}</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-label">⚡ Negative Prompt</div>
+            <div class="spec-value">${escapeHtml(prompt.negativePrompt || 'blurry, distorted, low quality, cartoon, artifacts')}</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-label">🛠️ Recommended AI Video Tools</div>
+            <div class="spec-value">${(prompt.tools || ['Runway Gen-3', 'Kling AI', 'Luma']).join(', ')}</div>
+          </div>
+        </div>
+
+        <!-- Scene Breakdown / Beats -->
+        ${prompt.beats ? `
+          <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-top: 14px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 6px;">
+              ⏱️ 30-Second Scene Breakdown / Timing Beats
+            </div>
+            <pre style="font-family: inherit; font-size: 13px; color: var(--text-muted); white-space: pre-wrap;">${escapeHtml(prompt.beats)}</pre>
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- Tab 2: Interactive Remix Playground -->
+      <div id="modalRemixTabContent" style="display: none;">
+        <div class="remix-playground">
+          <div style="font-size: 14px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+            <span>✨ Live Prompt Remix Studio</span>
+            <span style="font-size: 11px; background: rgba(245, 158, 11, 0.15); color: #F59E0B; padding: 2px 8px; border-radius: 9999px;">Tweak & Copy</span>
+          </div>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px;">
+            Modify the subject, lighting, or camera to create your own unique version of this prompt in real-time.
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Subject / Main Focus:</label>
+              <input type="text" id="remixSubject" class="form-input" style="font-size: 13px;" value="${escapeHtml(prompt.title)}" oninput="updateRemixOutput()">
+            </div>
+
+            <div>
+              <label style="font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Lighting & Atmosphere:</label>
+              <input type="text" id="remixLighting" class="form-input" style="font-size: 13px;" value="Volumetric atmospheric lighting, glowing neon reflections" oninput="updateRemixOutput()">
+              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                <button type="button" class="remix-tag-btn" onclick="applyRemixTag('remixLighting', 'Cyberpunk Neon')">Cyberpunk Neon</button>
+                <button type="button" class="remix-tag-btn" onclick="applyRemixTag('remixLighting', 'Golden Hour Sunset')">Golden Hour</button>
+                <button type="button" class="remix-tag-btn" onclick="applyRemixTag('remixLighting', 'Dark Moody Noir')">Moody Noir</button>
+                <button type="button" class="remix-tag-btn" onclick="applyRemixTag('remixLighting', 'Ethereal Bioluminescent')">Bioluminescent</button>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Camera Motion & Lens:</label>
+              <input type="text" id="remixCamera" class="form-input" style="font-size: 13px;" value="${escapeHtml(prompt.camera || 'Cinematic 35mm anamorphic, smooth tracking slow push-in')}" oninput="updateRemixOutput()">
+              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                <button type="button" class="remix-tag-btn" onclick="applyRemixTag('remixCamera', '1000fps Ultra-Slow Motion')">1000fps Slow Mo</button>
+                <button type="button" class="remix-tag-btn" onclick="applyRemixTag('remixCamera', 'FPV Drone Dive')">FPV Drone</button>
+                <button type="button" class="remix-tag-btn" onclick="applyRemixTag('remixCamera', 'Macro Extreme Close-Up')">Macro Close-Up</button>
+                <button type="button" class="remix-tag-btn" onclick="applyRemixTag('remixCamera', 'Low Angle Orbit')">Low Orbit</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Remixed Output -->
+          <div style="margin-top: 16px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 11px; font-weight: 700; color: #10B981; text-transform: uppercase;">⚡ Live Remixed Prompt</span>
+              <span id="remixCharCount" style="font-size: 11px; color: var(--text-faint);">0 chars</span>
+            </div>
+            <div id="remixOutputText" style="font-family: monospace; font-size: 12.5px; color: var(--text-main); white-space: pre-wrap; line-height: 1.5;"></div>
+            <button type="button" class="btn btn-primary" style="width: 100%; margin-top: 12px; padding: 10px; font-weight: 700;" onclick="copyRemixedPrompt()">
+              📋 Copy Customized Remixed Prompt
+            </button>
+          </div>
+        </div>
+      </div>
     `;
 
     footerButtonsHtml = `
       <div style="display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="shareCurrentPrompt()">🔗 Share Prompt</button>
+        <a href="https://api.whatsapp.com/send?text=${encodeURIComponent('🔥 Check out this viral AI prompt on PromptVault: ' + prompt.title + ' ' + window.location.origin + '/?prompt=' + prompt.id)}" target="_blank" class="btn btn-secondary" style="border-color: #25D366; color: #25D366;">
+          💬 WhatsApp Share
+        </a>
         ${isAdmin ? `
           <button class="btn btn-secondary" onclick="editPrompt('${prompt.id}')">✏️ Edit (Admin)</button>
           <button class="btn btn-secondary" style="color: #F87171; border-color: rgba(248, 113, 113, 0.4);" onclick="deletePrompt('${prompt.id}')">🗑️ Delete (Admin)</button>
@@ -530,7 +611,15 @@ window.openPromptDetail = function(id) {
     ${footerButtonsHtml}
   `;
 
+  // Set direct URL query param for sharing
+  try {
+    history.pushState(null, '', `?prompt=${encodeURIComponent(prompt.id)}`);
+  } catch (e) {}
+
   modal.classList.add('active');
+  if (!locked) {
+    updateRemixOutput();
+  }
 };
 
 // Copy prompt text
@@ -777,6 +866,181 @@ window.handleVipPaymentSubmit = async function(e) {
 window.closeModals = function() {
   document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
   activePromptForModal = null;
+  try {
+    if (window.location.search.includes('prompt=')) {
+      history.pushState(null, '', window.location.pathname);
+    }
+  } catch (e) {}
+};
+
+// ─────────────────────────────────────────────────────────────
+// VIRAL GROWTH FUNCTIONS: DAILY DROP, REMIX, SHARING & COMMUNITY
+// ─────────────────────────────────────────────────────────────
+
+let dailyDropPrompt = null;
+
+function initDailyDrop() {
+  if (!promptsState || promptsState.length === 0) return;
+  dailyDropPrompt = promptsState[0];
+
+  const titleEl = document.getElementById('dailyDropTitle');
+  const descEl = document.getElementById('dailyDropDesc');
+  const thumbEl = document.getElementById('dailyDropThumb');
+  const catEl = document.getElementById('dailyDropCategory');
+
+  if (titleEl) titleEl.textContent = dailyDropPrompt.title;
+  if (descEl) descEl.textContent = dailyDropPrompt.description || dailyDropPrompt.title;
+  if (thumbEl && dailyDropPrompt.thumbnail) thumbEl.src = dailyDropPrompt.thumbnail;
+  if (catEl) catEl.textContent = `📁 ${dailyDropPrompt.category}`;
+
+  startDailyDropCountdown();
+}
+
+function startDailyDropCountdown() {
+  function updateTimer() {
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0);
+    const diff = midnight - now;
+    if (diff <= 0) return;
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+    const timerStr = `${hours.toString().padStart(2, '0')}h ${mins.toString().padStart(2, '0')}m ${secs.toString().padStart(2, '0')}s`;
+
+    const badge1 = document.getElementById('dailyDropTimer');
+    const badge2 = document.getElementById('dailyDropCardTimer');
+    if (badge1) badge1.textContent = `${timerStr} left`;
+    if (badge2) badge2.textContent = `⏱️ Resets in ${timerStr}`;
+  }
+  updateTimer();
+  setInterval(updateTimer, 1000);
+}
+
+window.openDailyDropPrompt = function() {
+  if (dailyDropPrompt) {
+    openPromptDetail(dailyDropPrompt.id);
+  }
+};
+
+window.switchModalTab = function(tab) {
+  const masterContent = document.getElementById('modalMasterTabContent');
+  const remixContent = document.getElementById('modalRemixTabContent');
+  const btnMaster = document.getElementById('tabBtnMaster');
+  const btnRemix = document.getElementById('tabBtnRemix');
+
+  if (tab === 'master') {
+    if (masterContent) masterContent.style.display = 'block';
+    if (remixContent) remixContent.style.display = 'none';
+    if (btnMaster) btnMaster.classList.add('active');
+    if (btnRemix) btnRemix.classList.remove('active');
+  } else {
+    if (masterContent) masterContent.style.display = 'none';
+    if (remixContent) remixContent.style.display = 'block';
+    if (btnMaster) btnMaster.classList.remove('active');
+    if (btnRemix) btnRemix.classList.add('active');
+    updateRemixOutput();
+  }
+};
+
+window.updateRemixOutput = function() {
+  if (!activePromptForModal) return;
+  const subject = document.getElementById('remixSubject')?.value || activePromptForModal.title;
+  const lighting = document.getElementById('remixLighting')?.value || 'Cinematic volumetric lighting';
+  const camera = document.getElementById('remixCamera')?.value || '35mm anamorphic wide lens';
+
+  const customPrompt = `CINEMATIC MASTER GENERATIVE VIDEO: [SUBJECT: ${subject}]. [LIGHTING & ATMOSPHERE: ${lighting}]. [CAMERA MOTION: ${camera}]. [QUALITY: 8K resolution, authentic optical depth of field, realistic textures, photorealistic render, no CGI artifacts].`;
+
+  const outEl = document.getElementById('remixOutputText');
+  const countEl = document.getElementById('remixCharCount');
+  if (outEl) outEl.textContent = customPrompt;
+  if (countEl) countEl.textContent = `${customPrompt.length} chars`;
+};
+
+window.applyRemixTag = function(fieldId, tag) {
+  const input = document.getElementById(fieldId);
+  if (!input) return;
+  if (!input.value.includes(tag)) {
+    input.value = input.value ? `${input.value}, ${tag}` : tag;
+  }
+  updateRemixOutput();
+};
+
+window.copyRemixedPrompt = function() {
+  const text = document.getElementById('remixOutputText')?.textContent;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('✨ Remixed customized prompt copied to clipboard!');
+  }).catch(() => {
+    alert(text);
+  });
+};
+
+window.shareCurrentPrompt = function() {
+  if (!activePromptForModal) return;
+  const url = `${window.location.origin}${window.location.pathname}?prompt=${encodeURIComponent(activePromptForModal.id)}`;
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('🔗 Direct shareable link copied to clipboard!');
+  }).catch(() => {
+    alert('Share URL: ' + url);
+  });
+};
+
+window.openSubmitPromptModal = function() {
+  const select = document.getElementById('subCategory');
+  if (select && CATEGORIES) {
+    select.innerHTML = CATEGORIES.filter(c => c.key !== 'all').map(c => `
+      <option value="${c.name}">${c.icon || '📁'} ${c.name}</option>
+    `).join('');
+  }
+  const modal = document.getElementById('submitModal');
+  if (modal) modal.classList.add('active');
+};
+
+window.handleCommunityPromptSubmit = async function(e) {
+  e.preventDefault();
+  const title = document.getElementById('subTitle').value.trim();
+  const category = document.getElementById('subCategory').value;
+  const tools = document.getElementById('subTools').value.trim();
+  const thumbnail = document.getElementById('subThumbnail').value.trim();
+  const masterPrompt = document.getElementById('subMasterPrompt').value.trim();
+  const creatorName = document.getElementById('subCreatorName').value.trim();
+  const creatorSocial = document.getElementById('subCreatorSocial').value.trim();
+
+  const btn = document.getElementById('subSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    const res = await fetch('/api/community-prompts/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        category,
+        tools: tools ? tools.split(',').map(s => s.trim()) : ['Runway Gen-3', 'Kling AI'],
+        thumbnail,
+        masterPrompt,
+        creatorName,
+        creatorSocial
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast('🎉 Thank you! Your prompt has been submitted for spotlight.');
+      closeModals();
+      e.target.reset();
+    } else {
+      alert(data.error || 'Submission failed.');
+    }
+  } catch (err) {
+    alert('Network error connecting to server.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Submit Prompt for Spotlight';
+  }
 };
 
 // Toast notification

@@ -21,6 +21,25 @@
 </head>
 <body>
 
+  <!-- Top Community & Viral Announcement Bar -->
+  <div class="top-announcement-bar" id="announcementBar">
+    <div class="container" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+        <span class="live-dot-pulse"></span>
+        <span><b>🔥 TODAY'S FREE VIP DROP:</b> Claim today's cinematic prompt before it resets!</span>
+        <span class="countdown-badge" id="dailyDropTimer">14h 32m 10s left</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; font-size: 12.5px;">
+        <a href="https://chat.whatsapp.com/invite" target="_blank" class="announcement-link" id="headerWhatsappLink">
+          💬 Join 2,500+ on WhatsApp
+        </a>
+        <a href="https://t.me/promptvault_vip" target="_blank" class="announcement-link" id="headerTelegramLink">
+          ✈️ Telegram VIP
+        </a>
+      </div>
+    </div>
+  </div>
+
   <!-- Sticky Header / Navbar -->
   <header class="navbar">
     <div class="container navbar-inner">
@@ -41,6 +60,7 @@
         <a class="nav-link active" onclick="resetFilters()">All Prompts</a>
         <a class="nav-link" href="#categories">Categories</a>
         <a class="nav-link" onclick="openPricingModal()">⭐ VIP Membership</a>
+        <a class="nav-link" onclick="openSubmitPromptModal()" style="color: #10B981; font-weight: 700;">➕ Submit Prompt</a>
       </nav>
 
       <!-- Action Buttons & Auth Profile Status -->
@@ -94,10 +114,13 @@
               <span>🗂️</span>
               <span id="totalCatsCount"><b>12</b> Categories</span>
             </div>
+            <div class="stat-chip">
+              <span>👥</span>
+              <span><b>2,500+</b> Active Creators</span>
+            </div>
           </div>
 
           <!-- Creator Action Buttons -->
-          <!-- User Action Buttons -->
           <div class="creator-actions" id="heroActionsContainer">
             <button class="btn btn-primary" onclick="document.getElementById('categories').scrollIntoView({ behavior: 'smooth' })">
               <span>🔥</span> Explore Master Prompts
@@ -105,7 +128,37 @@
             <button class="btn btn-secondary" onclick="openPricingModal()">
               <span>⭐</span> Get VIP Membership
             </button>
+            <button class="btn btn-secondary" onclick="openSubmitPromptModal()" style="border-color: rgba(16, 185, 129, 0.4); color: #10B981;">
+              <span>➕</span> Submit Your Prompt
+            </button>
+            <a href="https://chat.whatsapp.com/invite" target="_blank" id="heroWhatsappBtn" class="btn btn-secondary" style="border-color: rgba(37, 211, 102, 0.4); color: #25D366;">
+              <span>💬</span> WhatsApp VIP Group
+            </a>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Today's Free VIP Drop Banner -->
+    <section class="container" id="dailyDropSection" style="margin-top: -10px; margin-bottom: 28px;">
+      <div class="daily-drop-card" id="dailyDropCard" onclick="openDailyDropPrompt()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div class="daily-drop-badge">🌟 TODAY'S EXCLUSIVE FREE VIP DROP</div>
+          <span class="countdown-badge" id="dailyDropCardTimer">⏱️ Resets in 14h 32m</span>
+        </div>
+        <div class="daily-drop-content">
+          <img id="dailyDropThumb" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80" alt="Daily Drop" class="daily-drop-thumb">
+          <div class="daily-drop-info">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span class="tier-badge free" style="font-size: 11px;">🎁 100% FREE FOR 24 HOURS</span>
+              <span style="font-size: 12px; color: var(--text-muted);" id="dailyDropCategory">Category</span>
+            </div>
+            <h3 class="daily-drop-title" id="dailyDropTitle">Loading Today's Feature Prompt...</h3>
+            <p class="daily-drop-desc" id="dailyDropDesc">High-octane commercial master generative prompt ready for Runway Gen-3 & Kling AI.</p>
+          </div>
+          <button class="btn btn-primary daily-drop-btn" onclick="event.stopPropagation(); openDailyDropPrompt()">
+            ⚡ Copy Prompt Free →
+          </button>
         </div>
       </div>
     </section>
@@ -257,6 +310,64 @@
               💬 Confirm Payment on WhatsApp (+91 6289357399)
             </a>
             <button type="button" class="btn btn-secondary" onclick="closeModals()" style="width: 100%; padding: 9px;">Close</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Community Prompt Submission Modal -->
+  <div class="modal-overlay" id="submitModal">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🚀</span>
+          <span>Submit Your Prompt & Get Featured</span>
+        </div>
+        <button class="modal-close-btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 13.5px; margin-bottom: 18px;">
+          Share your best AI image or video generative prompt! Once verified by our team, your prompt will be featured live on PromptVault with your creator credit & Instagram/Twitter link.
+        </p>
+        <form onsubmit="handleCommunityPromptSubmit(event)">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 12.5px; font-weight: 700;">Prompt Title *</label>
+            <input type="text" id="subTitle" class="form-input" placeholder="e.g. ULTRA-REALISTIC CYBERPUNK RAIN CHASE" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 12px;">Category</label>
+              <select id="subCategory" class="form-select"></select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 12px;">AI Model Used</label>
+              <input type="text" id="subTools" class="form-input" placeholder="Runway Gen-3, Kling, Midjourney" value="Runway Gen-3, Kling AI">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 12.5px; font-weight: 700;">Thumbnail / Preview Image URL (Optional)</label>
+            <input type="url" id="subThumbnail" class="form-input" placeholder="Paste image web link (Unsplash, Discord, PostImages, etc.)">
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 12.5px; font-weight: 700;">Full Master Generative Prompt *</label>
+            <textarea id="subMasterPrompt" class="form-textarea" style="min-height: 90px;" placeholder="Paste the exact prompt you used..." required></textarea>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 12px;">Your Name / Creator Handle</label>
+              <input type="text" id="subCreatorName" class="form-input" placeholder="e.g. Alex Rivera (@alex_ai)">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 12px;">Instagram / Twitter Link</label>
+              <input type="url" id="subCreatorSocial" class="form-input" placeholder="https://instagram.com/yourhandle">
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModals()">Cancel</button>
+            <button type="submit" id="subSubmitBtn" class="btn btn-primary" style="padding: 10px 24px; font-weight: 700;">
+              🚀 Submit Prompt for Spotlight
+            </button>
           </div>
         </form>
       </div>

@@ -583,6 +583,51 @@ app.delete('/api/admin/prompts/:id', requireAdmin, (req, res) => {
   res.json({ success: true, message: 'Prompt deleted.' });
 });
 
+// ─────────────────────────────────────────────────────────────
+// COMMUNITY PROMPT SUBMISSION & REVIEW ROUTES
+// ─────────────────────────────────────────────────────────────
+
+// Public: Community creators submit their viral prompts
+app.post('/api/community-prompts/submit', (req, res) => {
+  const { title, category, masterPrompt, thumbnail, description, creatorName, creatorSocial, tools, aspect } = req.body;
+  if (!title || !masterPrompt) {
+    return res.status(400).json({ error: 'Title and Master Prompt are required.' });
+  }
+
+  const submission = db.createSubmission({
+    title,
+    category: category || 'General',
+    masterPrompt,
+    thumbnail: thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+    description: description || title,
+    creatorName: creatorName || 'Anonymous Creator',
+    creatorSocial: creatorSocial || '',
+    tools: tools || ['Runway Gen-3', 'Kling AI'],
+    aspect: aspect || '16:9'
+  });
+
+  res.json({ success: true, message: 'Prompt submitted successfully for review!', submission });
+});
+
+// Admin: View community submissions
+app.get('/api/admin/community-submissions', requireAdmin, (req, res) => {
+  res.json(db.getSubmissions());
+});
+
+// Admin: Approve submission and publish live
+app.post('/api/admin/community-submissions/:id/approve', requireAdmin, (req, res) => {
+  const prompt = db.approveSubmission(req.params.id);
+  if (!prompt) return res.status(404).json({ error: 'Submission not found.' });
+  res.json({ success: true, message: 'Submission approved and published live!', prompt });
+});
+
+// Admin: Reject submission
+app.post('/api/admin/community-submissions/:id/reject', requireAdmin, (req, res) => {
+  const sub = db.rejectSubmission(req.params.id);
+  if (!sub) return res.status(404).json({ error: 'Submission not found.' });
+  res.json({ success: true, message: 'Submission rejected.', submission: sub });
+});
+
 // Catch-all fallback route to serve index.html for frontend navigation (Express 5 compatible)
 app.use((req, res) => {
   const rootIndex = path.join(__dirname, 'index.html');
