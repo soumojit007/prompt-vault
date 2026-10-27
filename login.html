@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In & Register — PromptVault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .auth-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+    }
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      max-width: 440px;
+      width: 100%;
+      padding: 36px 32px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(250, 5, 5, 0.15);
+    }
+    .auth-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+    .auth-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .demo-credentials-box {
+      background: rgba(250, 5, 5, 0.08);
+      border: 1px dashed rgba(250, 5, 5, 0.3);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-top: 20px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+    .demo-credentials-box b {
+      color: var(--text-main);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <a href="index.html" class="brand" style="justify-content: center; margin-bottom: 8px;">
+          <div class="brand-logo-icon">⚡</div>
+          <div class="brand-text">Prompt<span>Vault</span></div>
+        </a>
+        <p style="color: var(--text-muted); font-size: 13.5px;">Unlock Viral AI Master Prompts & Engines</p>
+      </div>
+
+      <!-- Auth Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
+        <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Create Account</button>
+      </div>
+
+      <!-- Error / Alert Message Box -->
+      <div id="authAlert" style="display: none; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; margin-bottom: 16px;"></div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="loginEmail" class="form-input" placeholder="name@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px;">
+          Sign In to Vault
+        </button>
+      </form>
+
+      <!-- Sign Up Form -->
+      <form id="signupForm" style="display: none;" onsubmit="handleSignup(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="signupName" class="form-input" placeholder="Your Name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="signupEmail" class="form-input" placeholder="name@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="signupPassword" class="form-input" placeholder="At least 6 characters" minlength="6" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px;">
+          Create Free Account
+        </button>
+      </form>
+
+
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="index.html" style="font-size: 13px; color: var(--text-muted); text-decoration: underline;">
+          ← Back to Prompt Library
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────
+       SIGNUP PAYOUT / UPI PAYMENT POPUP MODAL
+       ───────────────────────────────────────────────────────────── -->
+  <div class="modal-overlay" id="signupPayoutModal">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🎉</span>
+          <span>Account Created! Activate VIP Access</span>
+        </div>
+        <button class="modal-close-btn" onclick="skipToApp()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <span class="tier-badge" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #fff; font-size: 12px; padding: 4px 14px;">
+            STEP 2 OF 2: 30-DAY VIP PASS
+          </span>
+          <h2 style="font-size: 22px; margin: 10px 0 6px;">Pay via UPI & Get Instant Approval</h2>
+          <p style="color: var(--text-muted); font-size: 13px;">
+            Scan the official creator UPI QR Code or copy the UPI ID below to unlock all 400+ viral video master prompts for 30 days.
+          </p>
+          <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); padding: 6px 14px; border-radius: 9999px; margin-top: 8px; color: #10B981; font-weight: 700; font-size: 12.5px;">
+            <span>📅</span>
+            <span>Plan Duration: 30 Days Full Access</span>
+          </div>
+        </div>
+
+        <!-- UPI Card Box -->
+        <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; text-align: center; margin-bottom: 20px;">
+          <!-- QR Code Preview -->
+          <div style="background: #fff; padding: 10px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 20px rgba(0,0,0,0.5); margin-bottom: 12px;">
+            <img id="modalQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=6289357399@upi&pn=PromptVault&am=499&cu=INR" alt="UPI QR Code" style="width: 170px; height: 170px; object-fit: contain; display: block;">
+          </div>
+
+          <!-- Price & Payee -->
+          <div style="font-size: 20px; font-weight: 800; color: #10B981; margin-bottom: 4px;" id="modalPriceTag">
+            ₹499 <span style="font-size: 13px; color: var(--text-muted); font-weight: 400;">(30 Days Plan)</span>
+          </div>
+          <div style="font-size: 13.5px; color: var(--text-main); font-weight: 600; margin-bottom: 10px;" id="modalPayeeTag">
+            Payee: PromptVault Creator
+          </div>
+
+          <!-- UPI ID Copy Box -->
+          <div style="display: flex; gap: 8px; justify-content: center; align-items: center; max-width: 380px; margin: 0 auto;">
+            <div style="flex: 1; background: var(--bg-card); border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius-sm); font-family: monospace; font-size: 13px; color: var(--text-main); overflow: hidden; text-overflow: ellipsis;" id="modalUpiIdText">
+              6289357399@upi
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="copyModalUpiId()">
+              📋 Copy UPI
+            </button>
+          </div>
+        </div>
+
+        <!-- Payment Verification Form -->
+        <form id="payoutVerificationForm" onsubmit="handlePayoutSubmit(event)">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 13px;">Transaction Reference / UTR Number *</label>
+            <input type="text" id="payoutRefInput" class="form-input" placeholder="e.g. 430182918291 (12-digit UPI reference)" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label" style="font-size: 13px;">Upload Payment Screenshot (Optional)</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('payoutScreenshotInput').click()">
+                📸 Select Screenshot
+              </button>
+              <span id="payoutFileName" style="font-size: 12px; color: var(--text-muted);">No file chosen</span>
+            </div>
+            <input type="file" id="payoutScreenshotInput" accept="image/*" style="display: none;" onchange="handleScreenshotFilePick(event)">
+            <img id="payoutProofPreview" style="max-height: 100px; border-radius: 6px; margin-top: 8px; display: none; border: 1px solid var(--border);">
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button type="submit" class="btn btn-primary" id="payoutSubmitBtn" style="width: 100%; padding: 12px; font-size: 14.5px;">
+              🚀 Submit Payment Verification
+            </button>
+            <a href="https://wa.me/916289357399" target="_blank" rel="noopener" class="btn btn-secondary" id="modalWhatsAppBtn" style="width: 100%; padding: 10px; font-size: 13.5px; border-color: #25D366; color: #25D366;">
+              💬 Confirm Payment on WhatsApp (+91 6289357399)
+            </a>
+            <button type="button" class="btn" style="background: none; color: var(--text-muted); font-size: 12.5px; text-decoration: underline;" onclick="skipToApp()">
+              Skip for now & browse free prompts →
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script>
+    let currentSettings = {
+      upiId: '6289357399@upi',
+      payeeName: 'PromptVault Creator',
+      vipPrice: '499',
+      whatsappNumber: '+91 6289357399',
+      upiQrImage: ''
+    };
+    let uploadedScreenshotBase64 = null;
+
+    // Load Live Payment Settings
+    async function loadPaymentSettings() {
+      try {
+        const res = await fetch('/api/payment-settings');
+        if (res.ok) {
+          currentSettings = await res.json();
+        }
+      } catch (err) {}
+    }
+    loadPaymentSettings();
+
+    // Tab switching
+    function switchTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('tabLogin').classList.toggle('active', isLogin);
+      document.getElementById('tabSignup').classList.toggle('active', !isLogin);
+      document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
+      document.getElementById('signupForm').style.display = isLogin ? 'none' : 'block';
+      hideAlert();
+    }
+
+    // Check URL parameters for tab
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'signup') {
+      switchTab('signup');
+    }
+
+    function showAlert(msg, isError = true) {
+      const alert = document.getElementById('authAlert');
+      alert.textContent = msg;
+      alert.style.display = 'block';
+      alert.style.background = isError ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)';
+      alert.style.border = isError ? '1px solid #EF4444' : '1px solid #10B981';
+      alert.style.color = isError ? '#F87171' : '#34D399';
+    }
+
+    function hideAlert() {
+      document.getElementById('authAlert').style.display = 'none';
+    }
+
+
+    // Login Handler
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideAlert();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showAlert(data.error || 'Login failed.');
+          return;
+        }
+
+        Auth.setSession(data.token, data.user);
+        if (data.user.role === 'admin') {
+          window.location.href = 'admin.html';
+        } else {
+          window.location.href = 'index.html';
+        }
+      } catch (err) {
+        showAlert('Could not connect to server.');
+      }
+    }
+
+    // Sign Up Handler
+    async function handleSignup(e) {
+      e.preventDefault();
+      hideAlert();
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showAlert(data.error || 'Registration failed.');
+          return;
+        }
+
+        Auth.setSession(data.token, data.user);
+        
+        // Immediately pop up the Payout / UPI modal
+        openPayoutModal(data.user);
+      } catch (err) {
+        showAlert('Could not connect to server.');
+      }
+    }
+
+    // Open Payout / UPI Payment Modal
+    function openPayoutModal(user) {
+      const modal = document.getElementById('signupPayoutModal');
+      if (!modal) return;
+
+      document.getElementById('modalUpiIdText').textContent = currentSettings.upiId || '6289357399@upi';
+      document.getElementById('modalPayeeTag').textContent = `Payee: ${currentSettings.payeeName || 'PromptVault Creator'}`;
+      document.getElementById('modalPriceTag').innerHTML = `₹${currentSettings.vipPrice || '499'} <span style="font-size: 13px; color: var(--text-muted); font-weight: 400;">(30 Days Plan)</span>`;
+
+      const qrImg = document.getElementById('modalQrImg');
+      if (qrImg) {
+        if (currentSettings.upiQrImage) {
+          qrImg.src = currentSettings.upiQrImage;
+        } else {
+          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`upi://pay?pa=${currentSettings.upiId || '6289357399@upi'}&pn=${currentSettings.payeeName || 'PromptVault'}&am=${currentSettings.vipPrice || '499'}&cu=INR`)}`;
+        }
+      }
+
+      // WhatsApp Button
+      const waBtn = document.getElementById('modalWhatsAppBtn');
+      if (waBtn) {
+        const cleanNumber = (currentSettings.whatsappNumber || '916289357399').replace(/[^0-9]/g, '');
+        const msg = encodeURIComponent(`Hi Admin, I have signed up on PromptVault with email: ${user.email}. I want to confirm my UPI payment for the 30 Days VIP Plan.`);
+        waBtn.href = `https://wa.me/${cleanNumber}?text=${msg}`;
+        waBtn.textContent = `💬 Confirm Payment on WhatsApp (${currentSettings.whatsappNumber || '+91 6289357399'})`;
+      }
+
+      modal.classList.add('active');
+    }
+
+    function copyModalUpiId() {
+      const upiText = document.getElementById('modalUpiIdText').textContent.trim();
+      navigator.clipboard.writeText(upiText).then(() => {
+        alert('✨ UPI ID copied to clipboard: ' + upiText);
+      });
+    }
+
+    function handleScreenshotFilePick(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      document.getElementById('payoutFileName').textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        uploadedScreenshotBase64 = evt.target.result;
+        const preview = document.getElementById('payoutProofPreview');
+        preview.src = uploadedScreenshotBase64;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function handlePayoutSubmit(e) {
+      e.preventDefault();
+      const paymentRef = document.getElementById('payoutRefInput').value.trim();
+      const submitBtn = document.getElementById('payoutSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Verifying...';
+
+      try {
+        const res = await fetch('/api/payment/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...Auth.getAuthHeader() },
+          body: JSON.stringify({
+            paymentRef,
+            paymentScreenshot: uploadedScreenshotBase64,
+            plan: '30_days'
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert('🎉 Payment details submitted successfully! The Administrator will verify and activate your VIP access.');
+          window.location.href = 'index.html';
+        } else {
+          alert(data.error || 'Failed to submit payment verification.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = '🚀 Submit Payment Verification';
+        }
+      } catch (err) {
+        alert('Server error.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 Submit Payment Verification';
+      }
+    }
+
+    function skipToApp() {
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

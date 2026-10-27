@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromptVault — Viral AI Video Master Prompts Library</title>
+  <meta name="description" content="Curated library of high-retention AI video master prompts for Reels, Shorts, TikTok. Works with Kling AI, Runway Gen-3, Luma Dream Machine, Sora, and Seedance.">
+  <meta name="keywords" content="AI video prompts, master prompts, viral prompts, Kling AI, Runway Gen-3, Sora, text to video">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="PromptVault — Viral AI Video Master Prompts Library">
+  <meta property="og:description" content="Copy viral AI video master prompts with one click. Tested for maximum retention.">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts: Sora & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Sticky Header / Navbar -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <div class="brand" onclick="resetFilters()">
+        <div class="brand-logo-icon">⚡</div>
+        <div class="brand-text">Prompt<span>Vault</span></div>
+      </div>
+
+      <!-- Live Search Bar -->
+      <div class="nav-search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search 400+ master prompts, categories, tags..." aria-label="Search master prompts">
+        <button id="searchClear" class="search-clear" title="Clear search">✕</button>
+      </div>
+
+      <!-- Nav Links -->
+      <nav class="nav-links">
+        <a class="nav-link active" onclick="resetFilters()">All Prompts</a>
+        <a class="nav-link" href="#categories">Categories</a>
+        <a class="nav-link" onclick="openPricingModal()">⭐ VIP Membership</a>
+      </nav>
+
+      <!-- Action Buttons & Auth Profile Status -->
+      <div class="nav-actions">
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
+          <svg class="sun-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <div id="navAuthContainer"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Creator Hero Profile & Banner -->
+    <section class="hero-section">
+      <div class="hero-banner">
+        <div class="hero-banner-pattern"></div>
+        <div class="hero-banner-glow"></div>
+      </div>
+
+      <div class="container">
+        <div class="creator-profile-card">
+          <div class="creator-avatar-wrap">
+            <img class="creator-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" alt="Master Creator Profile">
+            <div class="verified-badge" title="Verified AI Prompt Engineer">✓</div>
+          </div>
+          <h1 class="creator-name">Master Prompts Vault</h1>
+          <p class="creator-tagline">Viral AI video prompts for Reels, Shorts & TikTok — structured with camera motion, timing beats, and cinematic lighting for all major AI video tools.</p>
+          
+          <!-- Quick Stat Chips -->
+          <div class="creator-stats-chips">
+            <div class="stat-chip">
+              <span>🔥</span>
+              <span id="totalPromptsCount"><b>8+</b> Master Prompts</span>
+            </div>
+            <div class="stat-chip">
+              <span>🗂️</span>
+              <span id="totalCatsCount"><b>12</b> Categories</span>
+            </div>
+          </div>
+
+          <!-- Creator Action Buttons -->
+          <!-- User Action Buttons -->
+          <div class="creator-actions" id="heroActionsContainer">
+            <button class="btn btn-primary" onclick="document.getElementById('categories').scrollIntoView({ behavior: 'smooth' })">
+              <span>🔥</span> Explore Master Prompts
+            </button>
+            <button class="btn btn-secondary" onclick="openPricingModal()">
+              <span>⭐</span> Get VIP Membership
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters & Categories Section (Matches User Reference Layout) -->
+    <section class="container filter-section" id="categories">
+      <!-- Title & Dynamic Count -->
+      <div class="filter-header-block">
+        <h2 class="filter-main-heading" id="activeCategoryHeading">All Prompts</h2>
+        <p class="filter-subheading" id="activeCategorySubheading">Loading prompts...</p>
+      </div>
+
+      <!-- Search, Sort & Search Button Row -->
+      <div class="filter-search-row">
+        <div class="filter-search-input-wrap">
+          <input type="text" id="promptsFilterSearch" class="filter-search-input" placeholder="Search prompts..." aria-label="Search prompts">
+        </div>
+        <select id="promptsSortSelect" class="filter-sort-select" onchange="handleSortChange(event)">
+          <option value="newest">Newest First ⌵</option>
+          <option value="oldest">Oldest First</option>
+          <option value="az">A to Z</option>
+        </select>
+        <button class="btn btn-primary filter-search-btn" onclick="applySearchFilter()">
+          SEARCH
+        </button>
+      </div>
+
+      <!-- Type Toggles: All / Free / Premium -->
+      <div class="type-toggles">
+        <button class="type-btn active" data-type="all">All Prompts</button>
+        <button class="type-btn" data-type="free">🎁 Free</button>
+        <button class="type-btn" data-type="premium">⭐ Premium</button>
+      </div>
+
+      <!-- Multi-Line Horizontally Wrapped Category Pills -->
+      <div class="category-scroll-wrap" id="categoryScroll">
+        <!-- Rendered dynamically by app.js without horizontal scroll cutoff -->
+      </div>
+    </section>
+
+    <!-- Prompts Showcase Grid -->
+    <section class="container">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span>Explore Master Prompts</span>
+        </h2>
+        <span class="prompt-count-tag" id="promptsCountTag">Loading prompts...</span>
+      </div>
+
+      <!-- Prompt Cards Grid -->
+      <div class="prompt-grid" id="promptsGrid">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Prompt Detail Modal -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🎬</span>
+          <span>Master Prompt Engine</span>
+        </div>
+        <button class="modal-close-btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body" id="detailModalBody">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- VIP Membership / Pricing Modal -->
+  <div class="modal-overlay" id="pricingModal">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>⭐</span>
+          <span>PromptVault VIP Membership</span>
+        </div>
+        <button class="modal-close-btn" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <span class="tier-badge" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #fff; font-size: 12.5px; padding: 5px 16px;">⭐ 30-DAY ALL-ACCESS VIP PASS</span>
+          <h2 style="font-size: 24px; margin: 10px 0 6px;">Unlock All 400+ Master Prompts</h2>
+          <p style="color: var(--text-muted); font-size: 13.5px;">
+            Scan the official creator UPI QR Code or copy the UPI ID below for instant 30-day VIP activation.
+          </p>
+          <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); padding: 6px 16px; border-radius: 9999px; margin-top: 10px; color: #10B981; font-weight: 700; font-size: 13px;">
+            <span>📅</span>
+            <span>Validity: 30 Days Full Access Pass</span>
+          </div>
+        </div>
+
+        <!-- UPI Payout Box -->
+        <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; text-align: center; margin-bottom: 20px;">
+          <div style="background: #fff; padding: 10px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 20px rgba(0,0,0,0.5); margin-bottom: 12px;">
+            <img id="vipModalQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=6289357399@upi&pn=PromptVault&am=499&cu=INR" alt="UPI QR Code" style="width: 170px; height: 170px; object-fit: contain; display: block;">
+          </div>
+
+          <div style="font-size: 22px; font-weight: 800; color: #10B981; margin-bottom: 2px;" id="vipModalPriceTag">
+            ₹499 <span style="font-size: 13px; color: var(--text-muted); font-weight: 400;">(30 Days Plan)</span>
+          </div>
+          <div style="font-size: 13.5px; color: var(--text-main); font-weight: 600; margin-bottom: 10px;" id="vipModalPayeeTag">
+            Payee: PromptVault Creator
+          </div>
+
+          <!-- UPI ID Copy Box -->
+          <div style="display: flex; gap: 8px; justify-content: center; align-items: center; max-width: 380px; margin: 0 auto;">
+            <div style="flex: 1; background: var(--bg-card); border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius-sm); font-family: monospace; font-size: 13px; color: var(--text-main); overflow: hidden; text-overflow: ellipsis;" id="vipModalUpiIdText">
+              6289357399@upi
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="copyVipUpiId()">
+              📋 Copy UPI
+            </button>
+          </div>
+        </div>
+
+        <!-- User Email / Activation Box -->
+        <div id="vipUserStatusBox" style="background: rgba(250, 5, 5, 0.06); border: 1px dashed rgba(250, 5, 5, 0.3); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 18px; text-align: center;">
+          <!-- Injected dynamically by Auth status -->
+        </div>
+
+        <!-- Payment Verification Form -->
+        <form id="vipPaymentVerifyForm" onsubmit="handleVipPaymentSubmit(event)">
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label" style="font-size: 13px;">Transaction Reference / UTR Number *</label>
+            <input type="text" id="vipRefInput" class="form-input" placeholder="e.g. 430182918291 (12-digit UPI reference)" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label" style="font-size: 13px;">Upload Payment Screenshot (Optional)</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('vipScreenshotInput').click()">
+                📸 Select Screenshot
+              </button>
+              <span id="vipFileName" style="font-size: 12px; color: var(--text-muted);">No file chosen</span>
+            </div>
+            <input type="file" id="vipScreenshotInput" accept="image/*" style="display: none;" onchange="handleVipScreenshotPick(event)">
+            <img id="vipProofPreview" style="max-height: 100px; border-radius: 6px; margin-top: 8px; display: none; border: 1px solid var(--border);">
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button type="submit" class="btn btn-primary" id="vipSubmitVerifyBtn" style="width: 100%; padding: 12px; font-size: 14.5px;">
+              🚀 Submit Payment for VIP Verification
+            </button>
+            <a href="https://wa.me/916289357399" target="_blank" rel="noopener" class="btn btn-secondary" id="vipContactAdminBtn" style="width: 100%; padding: 10px; font-size: 13.5px; border-color: #25D366; color: #25D366; justify-content: center;">
+              💬 Confirm Payment on WhatsApp (+91 6289357399)
+            </a>
+            <button type="button" class="btn btn-secondary" onclick="closeModals()" style="width: 100%; padding: 9px;">Close</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Floating WhatsApp Support -->
+  <a href="https://wa.me/916289357399?text=Hi%20Admin,%20I%20need%20support%20with%20PromptVault." target="_blank" rel="noopener" class="floating-support-btn" title="Contact Creator on WhatsApp (+91 6289357399)">
+    <span>💬</span>
+    <span>WhatsApp Support</span>
+  </a>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="brand" onclick="resetFilters()">
+            <div class="brand-logo-icon" style="width: 32px; height: 32px; font-size: 16px;">⚡</div>
+            <div class="brand-text" style="font-size: 17px;">Prompt<span>Vault</span></div>
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Viral AI video master prompts repository curated by creators and digital artists.</p>
+        </div>
+
+        <nav class="footer-nav">
+          <a onclick="resetFilters()">All Prompts</a>
+          <a href="#categories">Categories</a>
+          <a onclick="openPricingModal()">VIP Membership</a>
+          <a href="login.html">Sign In / Account</a>
+        </nav>
+      </div>
+
+      <div class="footer-copy">
+        © 2026 PromptVault. Managed by Administrator.
+      </div>
+    </div>
+  </footer>
+
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

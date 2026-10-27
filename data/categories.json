@@ -1,0 +1,67 @@
+[
+  {
+    "id": "cat_1",
+    "name": "Animal & Pets",
+    "icon": "🐾"
+  },
+  {
+    "id": "cat_2",
+    "name": "Art & Animation",
+    "icon": "🎨"
+  },
+  {
+    "id": "cat_3",
+    "name": "ASMR & Satisfying",
+    "icon": "🫧"
+  },
+  {
+    "id": "cat_4",
+    "name": "Comedy & Entertainment",
+    "icon": "😂"
+  },
+  {
+    "id": "cat_5",
+    "name": "DIY & Crafts",
+    "icon": "🔨"
+  },
+  {
+    "id": "cat_6",
+    "name": "Emotional & Inspirational",
+    "icon": "🌟"
+  },
+  {
+    "id": "cat_7",
+    "name": "Fantasy & Sci-Fi",
+    "icon": "🚀"
+  },
+  {
+    "id": "cat_8",
+    "name": "Food & Cooking",
+    "icon": "🍳"
+  },
+  {
+    "id": "cat_9",
+    "name": "Nature & Wildlife",
+    "icon": "🌿"
+  },
+  {
+    "id": "cat_10",
+    "name": "Sports & Action",
+    "icon": "⚡"
+  },
+  {
+    "id": "cat_11",
+    "name": "Historical & Nostalgia",
+    "icon": "🏛️"
+  },
+  {
+    "id": "cat_12",
+    "name": "Tools & AI",
+    "icon": "🤖"
+  },
+  {
+    "id": "cat_1793028253056",
+    "name": "BABY",
+    "icon": "👶"
+  }
+]

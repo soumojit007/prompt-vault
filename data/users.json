@@ -1,0 +1,55 @@
+[
+  {
+    "id": "usr_1793027936648",
+    "status": "free",
+    "role": "user",
+    "plan": "free",
+    "createdAt": "2026-10-26T15:18:56.648Z",
+    "name": "adasd",
+    "email": "asdas@gmail.com",
+    "passwordHash": "$2b$10$Rx.OtGemnA43Ypkb98O7HOMhtHuK8YejqWikoc2AZdKY0BGXS61XS"
+  },
+  {
+    "id": "usr_1793027905792",
+    "status": "free",
+    "role": "user",
+    "plan": "free",
+    "createdAt": "2026-10-26T15:18:25.792Z",
+    "name": "sad",
+    "email": "asdsa@gmaki.com",
+    "passwordHash": "$2b$10$P1ppobVmT3vOlWUu8KMH..TtcAFAo6W9HMFb5FR1flmMolfzwasPO"
+  },
+  {
+    "id": "usr_admin_1",
+    "name": "Soumojit Karmakar",
+    "email": "soumojitkarmakar533@gmail.com",
+    "passwordHash": "$2b$10$cWG9V1Tz1Uw5pNCK.0gc6eStHrxkwdphKRbbq.9J.e.V9ZzmC0.Hq",
+    "role": "admin",
+    "status": "active_paid",
+    "plan": "lifetime",
+    "createdAt": "2026-10-26T14:50:53.786Z",
+    "updatedAt": "2026-10-27T00:20:42.102Z"
+  },
+  {
+    "id": "usr_paid_2",
+    "name": "Rahul Sharma",
+    "email": "rahul.ai@example.com",
+    "passwordHash": "$2b$10$wmeCt9jYQrsTjp0KYyw5gey/9BGe0fySItmzdZ382JMqKdH6HinJi",
+    "role": "user",
+    "status": "active_paid",
+    "plan": "premium_vip",
+    "paymentRef": "UPI-TXN-9841284912",
+    "createdAt": "2026-10-24T14:50:53.786Z"
+  },
+  {
+    "id": "usr_pending_3",
+    "name": "Sarah Jenkins",
+    "email": "sarah.creations@example.com",
+    "passwordHash": "$2b$10$wmeCt9jYQrsTjp0KYyw5gey/9BGe0fySItmzdZ382JMqKdH6HinJi",
+    "role": "user",
+    "status": "pending",
+    "plan": "premium_vip",
+    "paymentRef": "STRIPE-PAY-8721948",
+    "createdAt": "2026-10-26T10:50:53.786Z"
+  }
+]
